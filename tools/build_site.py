@@ -1,180 +1,41 @@
-import os, html, cv2
-R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
-os.makedirs(f'{R}/thumbs', exist_ok=True)
-def thumb(fn):
-    out = f'{R}/thumbs/{fn}'
+"""Builds index.html (and the thumbnails) for every person listed in OWNERS.
+
+Each person has a folder (dad/, son/) with the same layout:
+  <person>/decks.py             the DECKS list and card data for that person
+  <person>/decks/*.dck          deck files (Forge format)
+  <person>/cards/               one photo per card
+  <person>/tokens-and-extras/   tokens, emblems, sticker sheets
+  <person>/photos/              the original photos the card images were cut from
+  <person>/thumbs/              small card images used by the page (created here)
+
+Run from anywhere:  python3 tools/build_site.py   (needs Python with OpenCV, cv2)
+"""
+import os, sys, re, html, runpy
+import cv2
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+R = os.path.dirname(HERE)  # repo root
+sys.path.insert(0, HERE)   # so each <person>/decks.py can `from deckkit import ...`
+
+OWNERS = [('dad', 'Dad'), ('son', 'Son')]  # (folder, tab label)
+
+
+def thumb(owner, fn):
+    out = f'{R}/{owner}/thumbs/{fn}'
     if not os.path.exists(out):
-        im = cv2.imread(f'{R}/cards/{fn}'); h, w = im.shape[:2]
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        im = cv2.imread(f'{R}/{owner}/cards/{fn}'); h, w = im.shape[:2]
         cv2.imwrite(out, cv2.resize(im, (360, int(h * 360 / w)), interpolation=cv2.INTER_AREA), [cv2.IMWRITE_JPEG_QUALITY, 80])
-# (name, file, cost, note, qty-label)
-C = lambda n, f, c, note='': dict(name=n, file=f, cost=c, note=note)
-creatures = {
- '1 mana': [C('Emergency Phytomedic','emergency-phytomedic.jpg','{G/W}','Enters prepared: a cheap +1/+1 counter and 1 life')],
- '2 mana': [C('Carnivorous Cultivator','carnivorous-cultivator.jpg','{1}{G}','Deathtouch 2/3 that gets lands back'),
-            C('Marwyn, the Preserver','marwyn-the-preserver.jpg','{1}{G}','3/2 for two; can return lands'),
-            C('Sureshot Sower','sureshot-sower.jpg','{1}{G}','Reach, or discard to kill a flyer'),
-            C('Konstrari Improviser','konstrari-improviser.jpg','{1}{R/G}','Hybrid, so green pays for it; makes a Heartwood')],
- '3 mana': [C('Greenhouse Propagator','greenhouse-propagator.jpg','{2}{G}','Mana creature that gains life'),
-            C('Budding Insurgent','budding-insurgent.jpg','{2}{G}','3/3 vigilance; can destroy an artifact or enchantment'),
-            C('Tinybones, Pocket Nuisance','tinybones-pocket-nuisance.jpg','{2}{B}','Makes the opponent discard'),
-            C('Theoretical Necromancer','theoretical-necromancer.jpg','{2}{B}','4/1; later returns a creature from the graveyard')],
- '4 mana': [C('Rampart Hunter','rampart-hunter.jpg','{3}{B}','Deathtouch 3/3 with a combat trick'),
-            C('Teyo, Diamondblade Mage','teyo-diamondblade-mage.jpg','{3}{B}','Flash 3/1; gives deathtouch'),
-            C('Titanbones, Towering Heart','titanbones-towering-heart.jpg','{3}{G}','Grows whenever you gain life')],
- '5 mana': [C('Hungering Puppetbeast','hungering-puppetbeast.jpg','{3}{G}{G}','5/5 that makes a Heartwood token'),
-            C('Wrecking Gecko','wrecking-gecko.jpg','{4}{G}','5/5 with ward; can fetch a basic land'),
-            C('Hapatra, the Desert Fang','hapatra-the-desert-fang.jpg','{2}{B}{B}{G}','Shrinks an opposing creature')],
- '6+ mana': [C('Apex Witchstalker','apex-witchstalker.jpg','{4}{B}{B}','6/4 menace; gains life; can fetch a basic land'),
-             C('Ruric Thar, Magecrusher','ruric-thar-magecrusher.jpg','{5}{G}{G}','7/7 reach, vigilance, trample')],
-}
-spells = {
- 'Removal': [C('Silence the Echo','silence-the-echo.jpg','{1}{B}','Destroy a creature or planeswalker'),
-             C('Compel Brutality','compel-brutality.jpg','{1}{G}','Your creature deals damage to theirs'),
-             C('Extended Absence','extended-absence-foil.jpg','{3}{B}','Exile a creature (foil copy)'),
-             C('Extended Absence','extended-absence-non-foil.jpg','{3}{B}','Exile a creature (non-foil copy)')],
- 'Value': [C('Restore with Empathy','restore-with-empathy.jpg','{2}{G}','Return any permanent, gain 4 life'),
-           C('Bestial Incursion','bestial-incursion.jpg','{3}{G}','4/4 trampler, with flashback')],
-}
-side = {
- 'Sideboard': [C('Solve for Disappointment','solve-for-disappointment.jpg','{1}{B}','Bring in against slow decks, or ones built around a bomb or planeswalker, to take it out of their hand. Swap for Emergency Phytomedic.'),
-               C('Cast Away Doubt','cast-away-doubt.jpg','{2}{B}','Bring in against slow decks when you are not racing, because it hurts you too (2 damage each). Swap for Restore with Empathy.'),
-               C('Puppet Crafting','puppet-crafting.jpg','{1}{G}','Bring in against slow decks that let you set up a Heartwood token (from Konstrari Improviser or Hungering Puppetbeast) to turn into a 5/5. Swap for Budding Insurgent.'),
-               C('Yargle, Glutton of Urborg','yargle-glutton-of-urborg.jpg','{4}{B}','Bring in against decks with little removal and few 3-power creatures, where a 9/3 for five dominates. Swap for Greenhouse Propagator (that is the Eddy deck).')],
- 'Also considered': [C('Loot, the Anomaly','loot-the-anomaly.jpg','{2}{B}','Printed -2/4; plays as a 2/4 attacker'),
-                     C('Stingerquill Voxmancer','stingerquill-voxmancer.jpg','{R/B}','Hybrid one-drop that pings the opponent'),
-                     C('Eye of Jace','eye-of-jace.jpg','{1}','Colourless; needs a full graveyard')],
-}
-thumb('forest-foil-full-art.jpg')
+
+
 def mv(cost):
-    import re
     n = 0
     for s in re.findall(r'\{([^}]+)\}', cost):
         n += int(s) if s.isdigit() else 1
     return n
 
-import copy
-def make_eddy():
-    cr, sp, sd = copy.deepcopy(creatures), copy.deepcopy(spells), copy.deepcopy(side)
-    prop = [c for c in cr['3 mana'] if c['name'] == 'Greenhouse Propagator'][0]
-    cr['3 mana'].remove(prop)
-    yar = [c for c in sd['Sideboard'] if c['name'].startswith('Yargle')][0]
-    sd['Sideboard'].remove(yar)
-    yar['note'] = '9/3 with no abilities'
-    cr['5 mana'].append(yar)
-    prop['note'] = 'Bring in against fast decks, or when your hand is clogged with five-drops, for early mana and life. Swap for Yargle (that is the Black-Green deck).'
-    sd['Sideboard'].insert(0, prop)
-    return cr, sp, sd
-
-def land_tile(f, name, note):
-    thumb(f)
-    return ('<figure class="card land-card"><button type="button" data-full="cards/%s" data-name="%s"><img loading="lazy" src="thumbs/%s" alt="%s"></button>'
-            '<figcaption><b>%s</b><em>%s</em></figcaption></figure>' % (f, name, f, name, name, note))
-def land_box(big, small):
-    return '<div class="landbox"><b>%s</b><span>%s</span></div>' % (big, small)
-LANDS_BG = ('<div class="lands">' + land_tile('forest-foil-full-art.jpg', 'Forest (foil)', 'The one basic land I have so far')
-            + land_box('10 Forest', '1 owned, 9 to add') + land_box('7 Swamp', 'all 7 to add') + '</div>')
-LANDS_WU = ('<div class="lands">' + land_tile('plains.jpg', 'Plains', 'One of my two Plains')
-            + land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have')
-            + land_box('9 Plains', '2 owned, 7 to add') + land_box('8 Island', 'all 8 to add') + '</div>')
-
-wu_creatures = {
- '2 mana': [C('Fatehold Chronologist','fatehold-chronologist.jpg','{1}{W/U}','1/2 flyer; its prepared spell makes a 2/2 and surveils'),
-            C('Campus Crier','campus-crier.jpg','{1}{W}','3/1; can later make a Jace planeswalker'),
-            C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-foil.jpg','{1}{W}','2/1 flyer (foil copy)'),
-            C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','2/1 flyer (non-foil copy)'),
-            C('Surveillance Phantasm','surveillance-phantasm.jpg','{1}{U}','2/3 flyer; attacks once you surveil'),
-            C('Teyo, Lightshield Expert','teyo-lightshield-expert.jpg','{1}{W}','Flash; protects a permanent from removal')],
- '3 mana': [C('Rescue Girl, First Responder','rescue-girl-first-responder.jpg','{2}{W}','1/3 flyer that can rebuy enter effects'),
-            C('Graft Surgeon','graft-surgeon.jpg','{2}{W}','2/2 that passes its counters on when it dies'),
-            C('Divining Duelist','divining-duelist.jpg','{2}{U}','Flash 3/2; taps a blocker or loots')],
- '4 mana': [C('Semester Foreseer','semester-foreseer.jpg','{3}{U}','3/4 that surveils and makes a 2/2'),
-            C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance'),
-            C('Desperate Futurescribe','desperate-futurescribe.jpg','{2}{W}{U}','3/4 flyer that buffs a creature each combat')],
- '5 mana': [C('Saheeli, Consul of Oversight','saheeli-consul-of-oversight.jpg','{3}{W}{W}','4/4 flyer; makes Thopters when you surveil'),
-            C('Undulating Witness','undulating-witness.jpg','{4}{U}','3/5 flyer; can fetch a basic land'),
-            C('Fateshaper Aspirant','fateshaper-aspirant.jpg','{4}{W}','3/4 that rebuys a legendary card or protects a creature')],
- '6 mana': [C('Ruric Thar, Biomagus','ruric-thar-biomagus.jpg','{4}{U}{U}','4/6 flying, prowess; draws when targeted')],
-}
-wu_spells = {
- 'Removal': [C('Memory Trap','memory-trap.jpg','{2}{W}','Exile a nonland permanent while it stays out (foil)'),
-             C('Gideon\'s Memorial','gideons-memorial.jpg','{1}{W}','Boosts tokens; discard it for 4 damage to an attacker or blocker')],
- 'Value': [C('Way of the Mind Sculptor','way-of-the-mind-sculptor.jpg','{4}{U}','Makes a Jace that surveils and draws (foil)'),
-           C('Sphinx\'s Approach','sphinxs-approach.jpg','{1}{U}{U}','Instant: draw two cards'),
-           C('Predictive Preparations','predictive-preparations.jpg','{1}{W}','Counters on two creatures, with flashback'),
-           C('Unsummon','unsummon.jpg','{U}','Cheap tempo trick'),
-           C('Eye of Jace','eye-of-jace.jpg','{1}','Surveils every turn')],
-}
-wu_side = {
- 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Bring in against decks full of green or blue creatures. Swap for Unsummon.'),
-               C('Precise Redaction','precise-redaction.jpg','{1}{U}','Bring in against white or black decks that lean on spells such as removal; keep two mana open. Swap for Eye of Jace.'),
-               C('Generous Revival','generous-revival.jpg','{2}{W}','Bring in against removal-heavy decks in long games; it rebuys any creature costing 3 or less. Swap for Predictive Preparations.'),
-               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if your colours are awkward, or against decks that reuse their graveyard (it exiles a card when it attacks). Swap for Graft Surgeon.')],
-}
-NOTE_WU = ('Undulating Witness can fetch a basic land. If your opponents have lots of green or blue creatures, '
-           'bring in Refute Destiny. Samut, Tyrant of Naktamun and Emergency Phytomedic are the next cuts to consider.')
-NOTE_BG = ('Apex Witchstalker and Wrecking Gecko can fetch a basic land, which helps if the mana goes wrong. '
-        'For a more consistent version, play 11 Forest and 6 Swamp and swap Hapatra and Apex Witchstalker '
-        'for Loot, the Anomaly and Stingerquill Voxmancer.')
-LANDS_WR = ('<div class="lands">' + land_tile('dedicated-commons.jpg', 'Dedicated Commons', 'Red/white land; enters tapped unless you control a planeswalker')
-            + land_tile('plains.jpg', 'Plains', 'One of my two Plains')
-            + land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have')
-            + land_tile('mountain-full-art.jpg', 'Mountain (full-art)', 'The one Mountain I have so far')
-            + land_box('9 Plains', '2 owned, 7 to add') + land_box('7 Mountain', '1 owned, 6 to add') + land_box('1 Dedicated Commons', 'owned') + '</div>')
-
-wr_creatures = {
- '1 mana': [C('Stingerquill Voxmancer','stingerquill-voxmancer.jpg','{R/B}','Hybrid, so red pays for it; pings the opponent each turn'),
-            C('Marwyn, the Clearcutter','marwyn-the-clearcutter.jpg','{R}','2/1 for one; a legend, so it makes Wrath of the Bloodmane cheaper')],
- '2 mana': [C('Campus Crier','campus-crier.jpg','{1}{W}','3/1; can later make a Jace planeswalker'),
-            C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-foil.jpg','{1}{W}','2/1 flyer; a legend (foil copy)'),
-            C('Fatehold Chronologist','fatehold-chronologist.jpg','{1}{W/U}','Hybrid, so white pays for it; 1/2 flyer whose prepared spell makes a 2/2 and surveils'),
-            C('Teyo, Lightshield Expert','teyo-lightshield-expert.jpg','{1}{W}','Flash; protects a creature from removal and grows it')],
- '3 mana': [C('Rescue Girl, First Responder','rescue-girl-first-responder.jpg','{2}{W}','1/3 flyer that can rebuy enter effects'),
-            C('Graft Surgeon','graft-surgeon.jpg','{2}{W}','2/2 that passes its counters on when it dies'),
-            C('Hallway Heckler','hallway-heckler.jpg','{2}{R}','2/3 that loots every turn'),
-            C('Pyre Rhymer','pyre-rhymer.jpg','{1}{R}{R}','3/3 with prowess; the double red is the hardest cost in the deck')],
- '4 mana': [C('Heartstring Puller','heartstring-puller-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (foil copy)'),
-            C('Heartstring Puller','heartstring-puller-non-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (non-foil copy)'),
-            C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance')],
- '5 mana': [C('Saheeli, Consul of Oversight','saheeli-consul-of-oversight.jpg','{3}{W}{W}','4/4 flyer; makes Thopters when you surveil'),
-            C('Fateshaper Aspirant','fateshaper-aspirant.jpg','{4}{W}','3/4 that rebuys a legendary card or protects a creature')],
-}
-wr_spells = {
- 'Removal': [C('No Admittance','no-admittance.jpg','{1}{R}','3 damage to any target; adds to your Jace'),
-             C('Wrath of the Bloodmane','wrath-of-the-bloodmane.jpg','{2}{R}','4 damage; one cheaper with a legend (Marwyn, Tomik, Teyo, Rescue Girl, Saheeli)'),
-             C('Memory Trap','memory-trap.jpg','{2}{W}','Exile a nonland permanent while it stays out (foil)'),
-             C('Gideon\'s Memorial','gideons-memorial.jpg','{1}{W}','Boosts your tokens; discard it for 4 damage to an attacker or blocker')],
- 'Tricks and value': [C('Charge the Sanctum','charge-the-sanctum.jpg','{2}{R/W}','Hybrid; team pump, or a +1/+1 counter with first strike'),
-                      C('Blazing Crescendo','blazing-crescendo.jpg','{1}{R}','+3/+1 and you may play the top card of your library'),
-                      C('Predictive Preparations','predictive-preparations.jpg','{1}{W}','Counters on two creatures, with flashback'),
-                      C('Generous Revival','generous-revival.jpg','{2}{W}','Brings back a cheap creature, with flashback')],
-}
-wr_side = {
- 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Bring in against decks full of green or blue creatures. Swap for Predictive Preparations.'),
-               C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','Bring in against decks with no flyers or reach, for more cheap evasion (only one Tomik can stay in play). Swap for Stingerquill Voxmancer.'),
-               C('Artifist Acumen','artifist-acumen.jpg','{R}','Bring in against decks with lots of ground blockers, where first strike for your team wins combat. Swap for Blazing Crescendo.'),
-               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if the red is not showing up (it costs only colourless), or against graveyard decks. Swap for Pyre Rhymer.')],
-}
-NOTE_WR = ('This is the strongest 40 I can make from the cards left after the black-green deck, so it shares its white cards with the White-Blue Flyers deck: build one at a time. '
-           'Pyre Rhymer needs two red sources and there are only 8, so cut it for Afterthought Sentry if the red does not show up. '
-           'Bring in Refute Destiny against green or blue creatures. Dedicated Commons enters untapped once you have a Jace from Campus Crier or No Admittance.')
-DECKS = [
- dict(id='black-green', title='Black-Green', data=(creatures, spells, side), file='black-green.dck', lands=LANDS_BG, note=NOTE_BG,
-      intro='A 40-card deck built from my Reality Fracture cards. Green carries the early game and the big finishers. Black adds removal and graveyard value. Tap any card to see it full size.'),
- dict(id='eddy', title='Eddy', data=make_eddy(), file='eddy.dck', lands=LANDS_BG, note=NOTE_BG,
-      intro='The same deck with one swap: Yargle, Glutton of Urborg comes in for Greenhouse Propagator. That trades a mana creature for a big 9/3 body. Tap any card to see it full size.'),
- dict(id='white-blue', title='White-Blue Flyers', data=(wu_creatures, wu_spells, wu_side), file='white-blue-flyers.dck', lands=LANDS_WU, note=NOTE_WU,
-      intro='A different deck from the same cards: ten flyers and a surveil theme. Saheeli turns every surveil into a Thopter, and Way of the Mind Sculptor and Campus Crier make Jace planeswalkers that surveil and draw. It has less removal than the black-green decks, so it wins by evasion and card quality. Tap any card to see it full size.'),
- dict(id='white-red', title='White-Red', data=(wr_creatures, wr_spells, wr_side), file='white-red.dck', lands=LANDS_WR, note=NOTE_WR,
-      intro='The best deck I can build from everything except the black-green cards. White supplies the best creatures: a run of cheap flyers, Blossom-Blessed Angel and Saheeli. Red adds the burn (No Admittance and Wrath of the Bloodmane, with Memory Trap and Gideon\'s Memorial from white) and two Heartstring Pullers. Tap any card to see it full size.'),
-]
-for d in DECKS:
-    for grp in d['data']:
-        for cards in grp.values():
-            for c in cards:
-                thumb(c['file']); assert os.path.exists(f"{R}/cards/{c['file']}"), c
 
 def sym(cost):
-    import re
     out = ''
     for s_ in re.findall(r'\{([^}]+)\}', cost):
         cls = 'n'
@@ -189,21 +50,41 @@ def sym(cost):
         elif s_ == 'W/U': cls = 'hwu'
         out += '<i class="s %s">%s</i>' % (cls, html.escape(s_.replace('/', '')))
     return out
-def tile(c):
+
+
+def tile(o, c):
     n = html.escape(c['name'])
-    return ('<figure class="card"><button type="button" data-full="cards/%s" data-name="%s">'
-            '<img loading="lazy" src="thumbs/%s" alt="%s"></button>'
+    return ('<figure class="card"><button type="button" data-full="%s/cards/%s" data-name="%s">'
+            '<img loading="lazy" src="%s/thumbs/%s" alt="%s"></button>'
             '<figcaption><b>%s</b><span class="cost">%s</span><em>%s</em></figcaption></figure>'
-            % (c['file'], n, c['file'], n, n, sym(c['cost']), html.escape(c['note'])))
-def group_html(groups):
+            % (o, c['file'], n, o, c['file'], n, n, sym(c['cost']), html.escape(c['note'])))
+
+
+def group_html(o, groups):
     h = ''
     for g, cs in groups.items():
         head_ = '' if g == 'Sideboard' else '<h3>%s <small>%d</small></h3>' % (html.escape(g), len(cs))
-        h += head_ + '<div class="grid">%s</div>' % ''.join(tile(c) for c in cs)
+        h += head_ + '<div class="grid">%s</div>' % ''.join(tile(o, c) for c in cs)
     return h
+
+
+def lands_html(o, items):
+    h = '<div class="lands">'
+    for it in items:
+        if it[0] == 'tile':
+            _, f, name, note = it
+            h += ('<figure class="card land-card"><button type="button" data-full="%s/cards/%s" data-name="%s"><img loading="lazy" src="%s/thumbs/%s" alt="%s"></button>'
+                  '<figcaption><b>%s</b><em>%s</em></figcaption></figure>'
+                  % (o, f, html.escape(name), o, f, html.escape(name), html.escape(name), html.escape(note)))
+        else:
+            _, big, small = it
+            h += '<div class="landbox"><b>%s</b><span>%s</span></div>' % (html.escape(big), html.escape(small))
+    return h + '</div>'
+
+
 SIDE_SUB = 'Swap these in against a specific opponent, or if the main deck is not working.'
-PANEL = '''<div class="panel" id="panel-@ID@" role="tabpanel" aria-labelledby="tab-@ID@" hidden>
-<p class="dl"><a href="@FILE@" download>@FILE@</a> <span>(deck file, .dck format)</span></p>
+PANEL = '''<div class="panel" id="panel-@OID@-@ID@" role="tabpanel" aria-labelledby="tab-@OID@-@ID@" hidden>
+<p class="dl"><a href="@OID@/decks/@FILE@" download>@FILE@</a> <span>(deck file, .dck format)</span></p>
 <p class="intro">@INTRO@</p>
 <div class="stats"><div class="stat"><b>23</b><span>spells</span></div><div class="stat"><b>@NC@</b><span>creatures</span></div><div class="stat"><b>@NS@</b><span>non-creature spells</span></div><div class="stat"><b>17</b><span>lands</span></div><div class="stat"><b>40</b><span>cards in total</span></div></div>
 <div class="curve" role="img" aria-label="Mana curve of the 23 spells">@CURVE@</div>
@@ -216,44 +97,87 @@ PANEL = '''<div class="panel" id="panel-@ID@" role="tabpanel" aria-labelledby="t
 <h2>Sideboard</h2><p class="sub">@SIDESUB@</p>@SIDE@
 <p class="note">@NOTE@</p>
 </div>'''
-def render(d):
+
+
+def render(o, d):
     cr, sp, sd = d['data']
     main_cards = [c for g in (cr, sp) for cs in g.values() for c in cs]
-    assert len(main_cards) == 23, (d['id'], len(main_cards))
+    assert len(main_cards) == 23, (o, d['id'], len(main_cards))
     curve = {}
     for c in main_cards:
         m = min(mv(c['cost']), 7); curve[m] = curve.get(m, 0) + 1
     ch = ''.join('<div class="bar"><span style="height:%dpx"></span><b>%d</b><i>%s</i></div>' % (curve.get(m, 0) * 96 // max(curve.values()), curve.get(m, 0), '7+' if m == 7 else m) for m in range(1, 8))
-    rep = {'@ID@': d['id'], '@INTRO@': html.escape(d['intro']), '@FILE@': d['file'],
+    assert os.path.exists(f"{R}/{o}/decks/{d['file']}"), (o, d['file'])
+    rep = {'@OID@': o, '@ID@': d['id'], '@INTRO@': html.escape(d['intro']), '@FILE@': d['file'],
            '@NC@': str(sum(len(v) for v in cr.values())), '@NS@': str(sum(len(v) for v in sp.values())),
-           '@CURVE@': ch, '@CREATURES@': group_html(cr), '@SPELLS@': group_html(sp), '@SIDE@': group_html(sd),
-           '@SIDESUB@': SIDE_SUB, '@NOTE@': html.escape(d['note']), '@LANDS@': d['lands']}
+           '@CURVE@': ch, '@CREATURES@': group_html(o, cr), '@SPELLS@': group_html(o, sp), '@SIDE@': group_html(o, sd),
+           '@SIDESUB@': SIDE_SUB, '@NOTE@': html.escape(d['note']), '@LANDS@': lands_html(o, d['lands'])}
     out = PANEL
     for k, v in rep.items(): out = out.replace(k, v)
     return out
-tabs = ''.join('<button role="tab" id="tab-%s" aria-controls="panel-%s" aria-selected="false" data-id="%s">%s</button>' % (d['id'], d['id'], d['id'], d['title']) for d in DECKS)
-panels = ''.join(render(d) for d in DECKS)
-CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'site.css.html')).read()
+
+
+def load(o):
+    """Load <o>/decks.py, make sure every image it uses exists and has a thumbnail."""
+    decks = runpy.run_path(f'{R}/{o}/decks.py')['DECKS']
+    ids = [d['id'] for d in decks]
+    assert len(ids) == len(set(ids)), f'duplicate deck id in {o}/decks.py'
+    for d in decks:
+        files = [c['file'] for grp in d['data'] for cards in grp.values() for c in cards]
+        files += [it[1] for it in d['lands'] if it[0] == 'tile']
+        for f in files:
+            assert os.path.exists(f'{R}/{o}/cards/{f}'), (o, f)
+            thumb(o, f)
+    return decks
+
+
+owner_tabs, owner_sections = '', ''
+for o, label in OWNERS:
+    decks = load(o)
+    owner_tabs += ('<button role="tab" id="otab-%s" aria-controls="owner-%s" aria-selected="false" data-owner-tab data-owner="%s">%s</button>'
+                   % (o, o, o, html.escape(label)))
+    if decks:
+        dtabs = ''.join('<button role="tab" id="tab-%s-%s" aria-controls="panel-%s-%s" aria-selected="false" data-deck-tab data-owner="%s" data-deck="%s">%s</button>'
+                        % (o, d['id'], o, d['id'], o, d['id'], html.escape(d['title'])) for d in decks)
+        inner = '<div class="tabs decks" role="tablist" aria-label="%s\'s decks">%s</div>%s' % (html.escape(label), dtabs, ''.join(render(o, d) for d in decks))
+    else:
+        inner = '<p class="empty">No decks here yet.</p>'
+    owner_sections += '<section class="owner" id="owner-%s" role="tabpanel" aria-labelledby="otab-%s" hidden>%s</section>' % (o, o, inner)
+
+CSS = open(os.path.join(HERE, 'site.css.html')).read()
 PAGE = '''<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MTG Decks</title>
-<meta name="description" content="40-card decks built from my Reality Fracture cards.">
+<meta name="description" content="40-card decks built from our Reality Fracture cards.">
 @CSS@</head><body><main>
 <header><h1>MTG Decks</h1></header>
-<div class="tabs" role="tablist" aria-label="Decks">@TABS@</div>
-@PANELS@
+<div class="tabs owners" role="tablist" aria-label="Whose decks">@OWNERTABS@</div>
+@SECTIONS@
 </main>
 <dialog id="dlg"><img alt=""></dialog>
 <script>
 const dlg=document.getElementById('dlg'),img=dlg.querySelector('img');
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-full]');if(b){img.src=b.dataset.full;img.alt=b.dataset.name;dlg.showModal();}else if(e.target===dlg||e.target===img){dlg.close();}});
-const tabs=[...document.querySelectorAll('[role=tab]')];
-function show(id){if(!tabs.some(t=>t.dataset.id===id))id=tabs[0].dataset.id;tabs.forEach(t=>{const on=t.dataset.id===id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;document.getElementById('panel-'+t.dataset.id).hidden=!on;});document.title=tabs.find(t=>t.dataset.id===id).textContent+' | MTG Decks';}
-tabs.forEach((t,i)=>{t.addEventListener('click',()=>{history.replaceState(null,'','#'+t.dataset.id);show(t.dataset.id);});t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];n.focus();n.click();}});});
+const otabs=[...document.querySelectorAll('[data-owner-tab]')],dtabs=[...document.querySelectorAll('[data-deck-tab]')],last={};
+function show(h){
+  let [o,d]=h.split('/');
+  if(!otabs.some(t=>t.dataset.owner===o)){const m=dtabs.find(t=>t.dataset.deck===o);if(m){d=o;o=m.dataset.owner;}else{o=otabs[0].dataset.owner;d=null;}} /* bare #deck links from before the Dad/Son split */
+  const mine=dtabs.filter(t=>t.dataset.owner===o);
+  if(!mine.some(t=>t.dataset.deck===d))d=mine.length?mine[0].dataset.deck:null;
+  last[o]=d;
+  otabs.forEach(t=>{const on=t.dataset.owner===o;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;document.getElementById('owner-'+t.dataset.owner).hidden=!on;});
+  dtabs.forEach(t=>{const on=t.dataset.owner===o&&t.dataset.deck===d;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;document.getElementById('panel-'+t.dataset.owner+'-'+t.dataset.deck).hidden=!on;});
+  const on=otabs.find(t=>t.dataset.owner===o).textContent,dt=mine.find(t=>t.dataset.deck===d);
+  document.title=(dt?dt.textContent+' | ':'')+on+' | MTG Decks';
+}
+function go(h){history.replaceState(null,'','#'+h);show(h);}
+function wire(list,hash){list.forEach((t,i)=>{t.addEventListener('click',()=>go(hash(t)));t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const g=list.filter(x=>x.parentNode===t.parentNode),k=g.indexOf(t),n=g[(k+(e.key==='ArrowRight'?1:g.length-1))%g.length];n.focus();n.click();}});});}
+wire(otabs,t=>t.dataset.owner+(last[t.dataset.owner]?'/'+last[t.dataset.owner]:''));
+wire(dtabs,t=>t.dataset.owner+'/'+t.dataset.deck);
 window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1));
 </script></body></html>'''
-page = PAGE.replace('@CSS@', CSS).replace('@TABS@', tabs).replace('@PANELS@', panels)
+page = PAGE.replace('@CSS@', CSS).replace('@OWNERTABS@', owner_tabs).replace('@SECTIONS@', owner_sections)
 open(R + '/index.html', 'w').write(page)
 open(R + '/.nojekyll', 'w').write('')
 print(len(page))
