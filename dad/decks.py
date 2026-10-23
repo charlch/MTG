@@ -111,9 +111,9 @@ wr_creatures = {
             C('Teyo, Lightshield Expert','teyo-lightshield-expert.jpg','{1}{W}','Flash; protects a creature from removal and grows it')],
  '3 mana': [C('Rescue Girl, First Responder','rescue-girl-first-responder.jpg','{2}{W}','1/3 flyer that can rebuy enter effects'),
             C('Graft Surgeon','graft-surgeon.jpg','{2}{W}','2/2 that passes its counters on when it dies'),
-            C('Hallway Heckler','hallway-heckler.jpg','{2}{R}','2/3 that loots every turn')],
- '4 mana': [C('Tetsuko Umezawa, Pursuer','tetsuko-umezawa-pursuer.jpg','{3}{R}','2/4 with double strike and prowess; pings small blockers'),
-            C('Heartstring Puller','heartstring-puller-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (foil copy)'),
+            C('Hallway Heckler','hallway-heckler.jpg','{2}{R}','2/3 that loots every turn'),
+            C('Pyre Rhymer','pyre-rhymer.jpg','{1}{R}{R}','3/3 with prowess; the double red is the hardest cost in the deck')],
+ '4 mana': [C('Heartstring Puller','heartstring-puller-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (foil copy)'),
             C('Heartstring Puller','heartstring-puller-non-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (non-foil copy)'),
             C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance')],
  '5 mana': [C('Saheeli, Consul of Oversight','saheeli-consul-of-oversight.jpg','{3}{W}{W}','4/4 flyer; makes Thopters when you surveil'),
@@ -133,10 +133,10 @@ wr_side = {
  'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Bring in against decks full of green or blue creatures. Swap for Predictive Preparations.'),
                C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','Bring in against decks with no flyers or reach, for more cheap evasion (only one Tomik can stay in play). Swap for Stingerquill Voxmancer.'),
                C('Artifist Acumen','artifist-acumen.jpg','{R}','Bring in against decks with lots of ground blockers, where first strike for your team wins combat. Swap for Blazing Crescendo.'),
-               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if the red is not showing up (it costs only colourless), or against graveyard decks. Swap for Hallway Heckler.')],
+               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if the red is not showing up (it costs only colourless), or against graveyard decks. Swap for Pyre Rhymer.')],
 }
 NOTE_WR = ('This is the strongest 40 I can make from the cards left after the black-green deck, so it shares its white cards with the White-Blue Flyers deck: build one at a time. '
-           'Cut Hallway Heckler for Afterthought Sentry if the red does not show up. '
+           'Pyre Rhymer needs two red sources and there are only 8, so cut it for Afterthought Sentry if the red does not show up. '
            'Bring in Refute Destiny against green or blue creatures. Dedicated Commons enters untapped once you have a Jace from Campus Crier or No Admittance.')
 DECKS = [
  dict(id='black-green', title='Black-Green', data=(creatures, spells, side), file='black-green.dck', lands=LANDS_BG, note=NOTE_BG,

@@ -12,7 +12,7 @@ This mirrors `dad/`. See [`../AGENTS.md`](../AGENTS.md) for how decks are added.
 
 ## Cards from the first photos
 
-Tetsuko Umezawa, Fugitive is still cut from the first set, because it is partly hidden in the retake. The Cadet token was not in the retakes and is still cut off at the edge. Re-photograph those two if you want sharper images.
+Two cards are still cut from the first set, because they are partly hidden or cut off in the retakes: Tetsuko Umezawa, Fugitive and Tetsuko Umezawa, Pursuer. The Cadet token was not in the retakes and is still cut off at the edge. Re-photograph those three if you want sharper images.
 
 ## Index
 
@@ -49,6 +49,7 @@ Tetsuko Umezawa, Fugitive is still cut from the first set, because it is partly 
 | Terminal Criticism | [cards/terminal-criticism.jpg](cards/terminal-criticism.jpg) | retake-01.jpg |
 | Flesh Duplicate | [cards/flesh-duplicate.jpg](cards/flesh-duplicate.jpg) | retake-05.jpg |
 | Jiang Yanggu, Alone | [cards/jiang-yanggu-alone.jpg](cards/jiang-yanggu-alone.jpg) | retake-04.jpg |
+| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | photo-08.jpg |
 | Divining Duelist | [cards/divining-duelist.jpg](cards/divining-duelist.jpg) | retake-14.jpg |
 | Tetsuko Umezawa, Fugitive | [cards/tetsuko-umezawa-fugitive.jpg](cards/tetsuko-umezawa-fugitive.jpg) | photo-09.jpg |
 | Lyra, Archangel of Dawn | [cards/lyra-archangel-of-dawn.jpg](cards/lyra-archangel-of-dawn.jpg) | retake-09.jpg |
@@ -76,4 +77,3 @@ Tetsuko Umezawa, Fugitive is still cut from the first set, because it is partly 
 | Ferocity of the Hunt | [cards/ferocity-of-the-hunt.jpg](cards/ferocity-of-the-hunt.jpg) | retake-10.jpg |
 | Protégé's Awakening | [cards/proteges-awakening.jpg](cards/proteges-awakening.jpg) | retake-10.jpg |
 | Jiang Yanggu, Never Alone | [cards/jiang-yanggu-never-alone.jpg](cards/jiang-yanggu-never-alone.jpg) | retake-10.jpg |
-| Tam's Resistance | [cards/tams-resistance.jpg](cards/tams-resistance.jpg) | - |

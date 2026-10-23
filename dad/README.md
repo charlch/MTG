@@ -21,6 +21,7 @@ The card details are in the Google Sheet "MTG card list - FRA collection".
 | Emergency Phytomedic | [cards/emergency-phytomedic.jpg](cards/emergency-phytomedic.jpg) | photo-02.jpg |
 | Stingerquill Voxmancer | [cards/stingerquill-voxmancer.jpg](cards/stingerquill-voxmancer.jpg) | photo-02.jpg |
 | Charge the Sanctum | [cards/charge-the-sanctum.jpg](cards/charge-the-sanctum.jpg) | photo-03.jpg |
+| Tam's Resistance | [cards/tams-resistance.jpg](cards/tams-resistance.jpg) | photo-03.jpg |
 | Konstrari Improviser | [cards/konstrari-improviser.jpg](cards/konstrari-improviser.jpg) | photo-03.jpg |
 | Twinned Vision | [cards/twinned-vision.jpg](cards/twinned-vision.jpg) | photo-03.jpg |
 | Fatehold Chronologist | [cards/fatehold-chronologist.jpg](cards/fatehold-chronologist.jpg) | photo-04.jpg |
@@ -101,4 +102,3 @@ The card details are in the Google Sheet "MTG card list - FRA collection".
 | Dedicated Commons | [cards/dedicated-commons.jpg](cards/dedicated-commons.jpg) | photo-22.jpg |
 | Counter sticker sheet | [tokens-and-extras/counter-sticker-sheet.jpg](tokens-and-extras/counter-sticker-sheet.jpg) | photo-23.jpg |
 | Forest (foil, full-art) | [cards/forest-foil-full-art.jpg](cards/forest-foil-full-art.jpg) | photo-23.jpg |
-| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | - |
