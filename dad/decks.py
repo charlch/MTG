@@ -52,10 +52,10 @@ def make_eddy():
     sd['Sideboard'].insert(0, prop)
     return cr, sp, sd
 
-LANDS_BG = [land_tile('forest-foil-full-art.jpg', 'Forest (foil)', 'The one basic land I have so far'),
+LANDS_BG = [land_tile('forest-foil-full-art.jpg', 'Forest (foil)', 'The one basic land I have so far', official=False),
             land_box('10 Forest', '1 owned, 9 to add'), land_box('7 Swamp', 'all 7 to add')]
-LANDS_WU = [land_tile('plains.jpg', 'Plains', 'One of my two Plains'),
-            land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have'),
+LANDS_WU = [land_tile('plains.jpg', 'Plains', 'One of my two Plains', official=False),
+            land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have', official=False),
             land_box('9 Plains', '2 owned, 7 to add'), land_box('8 Island', 'all 8 to add')]
 
 wu_creatures = {
@@ -97,9 +97,9 @@ NOTE_BG = ('Apex Witchstalker and Wrecking Gecko can fetch a basic land, which h
         'For a more consistent version, play 11 Forest and 6 Swamp and swap Hapatra and Apex Witchstalker '
         'for Loot, the Anomaly and Stingerquill Voxmancer.')
 LANDS_WR = [land_tile('dedicated-commons.jpg', 'Dedicated Commons', 'Red/white land; enters tapped unless you control a planeswalker'),
-            land_tile('plains.jpg', 'Plains', 'One of my two Plains'),
-            land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have'),
-            land_tile('mountain-full-art.jpg', 'Mountain (full-art)', 'The one Mountain I have so far'),
+            land_tile('plains.jpg', 'Plains', 'One of my two Plains', official=False),
+            land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have', official=False),
+            land_tile('mountain-full-art.jpg', 'Mountain (full-art)', 'The one Mountain I have so far', official=False),
             land_box('9 Plains', '2 owned, 7 to add'), land_box('7 Mountain', '1 owned, 6 to add'), land_box('1 Dedicated Commons', 'owned')]
 
 wr_creatures = {

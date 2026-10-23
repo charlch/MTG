@@ -52,12 +52,21 @@ def sym(cost):
     return out
 
 
+def sf_attrs(card, set_, cn, official):
+    """data attributes the page script uses to look up the official image on Scryfall (none = always own photo)."""
+    if not official:
+        return ''
+    a = ' data-sf-set="%s"' % html.escape(set_.lower())
+    return a + (' data-sf-cn="%s"' % html.escape(str(cn)) if cn else ' data-sf-name="%s"' % html.escape(card))
+
+
 def tile(o, c):
     n = html.escape(c['name'])
-    return ('<figure class="card"><button type="button" data-full="%s/cards/%s" data-name="%s">'
-            '<img loading="lazy" src="%s/thumbs/%s" alt="%s"></button>'
+    return ('<figure class="card"><button type="button" data-full="%s/cards/%s" data-own-full="%s/cards/%s" data-name="%s">'
+            '<img loading="lazy" src="%s/thumbs/%s" data-own="%s/thumbs/%s" alt="%s"%s></button>'
             '<figcaption><b>%s</b><span class="cost">%s</span><em>%s</em></figcaption></figure>'
-            % (o, c['file'], n, o, c['file'], n, n, sym(c['cost']), html.escape(c['note'])))
+            % (o, c['file'], o, c['file'], n, o, c['file'], o, c['file'], n,
+               sf_attrs(c['name'], c['set'], c['cn'], c['official']), n, sym(c['cost']), html.escape(c['note'])))
 
 
 def group_html(o, groups):
@@ -72,10 +81,12 @@ def lands_html(o, items):
     h = '<div class="lands">'
     for it in items:
         if it[0] == 'tile':
-            _, f, name, note = it
-            h += ('<figure class="card land-card"><button type="button" data-full="%s/cards/%s" data-name="%s"><img loading="lazy" src="%s/thumbs/%s" alt="%s"></button>'
+            _, f, name, note, opt = it
+            h += ('<figure class="card land-card"><button type="button" data-full="%s/cards/%s" data-own-full="%s/cards/%s" data-name="%s">'
+                  '<img loading="lazy" src="%s/thumbs/%s" data-own="%s/thumbs/%s" alt="%s"%s></button>'
                   '<figcaption><b>%s</b><em>%s</em></figcaption></figure>'
-                  % (o, f, html.escape(name), o, f, html.escape(name), html.escape(name), html.escape(note)))
+                  % (o, f, o, f, html.escape(name), o, f, o, f, html.escape(name),
+                     sf_attrs(opt['card'], opt['set'], opt['cn'], opt['official']), html.escape(name), html.escape(note)))
         else:
             _, big, small = it
             h += '<div class="landbox"><b>%s</b><span>%s</span></div>' % (html.escape(big), html.escape(small))
@@ -150,14 +161,17 @@ PAGE = '''<!doctype html>
 <title>MTG Decks</title>
 <meta name="description" content="40-card decks built from our Reality Fracture cards.">
 @CSS@</head><body><main>
-<header><h1>MTG Decks</h1></header>
+<header><h1>MTG Decks</h1>
+<div class="imgmode"><div role="radiogroup" aria-label="Card images"><button type="button" role="radio" data-mode="official" aria-checked="true">Official</button><button type="button" role="radio" data-mode="mine" aria-checked="false">Our photos</button></div><span id="imgstatus" aria-live="polite"></span></div></header>
 <div class="tabs owners" role="tablist" aria-label="Whose decks">@OWNERTABS@</div>
 @SECTIONS@
+<footer class="legal">Official card images come from <a href="https://scryfall.com">Scryfall</a>, loaded in your browser. Magic: The Gathering card images are &copy; Wizards of the Coast.</footer>
 </main>
 <dialog id="dlg"><img alt=""></dialog>
 <script>
 const dlg=document.getElementById('dlg'),img=dlg.querySelector('img');
-document.addEventListener('click',e=>{const b=e.target.closest('button[data-full]');if(b){img.src=b.dataset.full;img.alt=b.dataset.name;dlg.showModal();}else if(e.target===dlg||e.target===img){dlg.close();}});
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-full]');if(b){img.dataset.fb=b.dataset.ownFull;img.src=b.dataset.full;img.alt=b.dataset.name;dlg.showModal();}else if(e.target===dlg||e.target===img){dlg.close();}});
+img.addEventListener('error',()=>{if(img.dataset.fb&&img.getAttribute('src')!==img.dataset.fb)img.src=img.dataset.fb;});
 const otabs=[...document.querySelectorAll('[data-owner-tab]')],dtabs=[...document.querySelectorAll('[data-deck-tab]')],last={};
 function show(h){
   let [o,d]=h.split('/');
@@ -176,6 +190,56 @@ wire(otabs,t=>t.dataset.owner+(last[t.dataset.owner]?'/'+last[t.dataset.owner]:'
 wire(dtabs,t=>t.dataset.owner+'/'+t.dataset.deck);
 window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1));
+/* Official card images: looked up on Scryfall in the browser (one batch request, cached for a week).
+   Any problem (offline, blocked, card not found, image fails) falls back to our own photo. */
+const MODE_KEY='mtg-img-mode',CACHE_KEY='mtg-official-v1',TTL=7*864e5;
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+let mode=store.get(MODE_KEY)==='mine'?'mine':'official',failed=false,cache={};
+try{cache=JSON.parse(store.get(CACHE_KEY)||'{}')||{};}catch(e){cache={};}
+const cardImgs=[...document.querySelectorAll('img[data-own]')],sfImgs=cardImgs.filter(i=>i.dataset.sfSet);
+const idOf=i=>i.dataset.sfCn?'c|'+i.dataset.sfSet+'|'+i.dataset.sfCn:'n|'+i.dataset.sfSet+'|'+i.dataset.sfName.toLowerCase();
+const modeBtns=[...document.querySelectorAll('[data-mode]')],statusEl=document.getElementById('imgstatus');
+function apply(){
+  let missing=0;
+  cardImgs.forEach(i=>{
+    const b=i.closest('button'),c=i.dataset.sfSet&&cache[idOf(i)];
+    if(mode==='official'&&i.dataset.sfSet&&!(c&&c.n))missing++;
+    const hit=mode==='official'&&c&&c.n&&!i.dataset.bad;
+    const src=hit?c.n:i.dataset.own;
+    if(i.getAttribute('src')!==src)i.src=src;
+    b.dataset.full=hit?(c.l||c.n):b.dataset.ownFull;
+  });
+  modeBtns.forEach(b=>b.setAttribute('aria-checked',b.dataset.mode===mode));
+  statusEl.textContent=mode!=='official'?'':failed?'Could not reach Scryfall, showing our photos.':missing?missing+' card'+(missing>1?'s have':' has')+' no official image yet, showing our photo.':'';
+}
+cardImgs.forEach(i=>i.addEventListener('error',()=>{if(i.getAttribute('src')!==i.dataset.own){i.dataset.bad='1';apply();}}));
+async function lookup(){
+  const need=new Map();
+  sfImgs.forEach(i=>{const id=idOf(i),c=cache[id];if(!c||Date.now()-c.t>TTL)need.set(id,i.dataset.sfCn?{set:i.dataset.sfSet,collector_number:i.dataset.sfCn}:{name:i.dataset.sfName,set:i.dataset.sfSet});});
+  const list=[...need.entries()];
+  failed=false;
+  for(let s=0;s<list.length;s+=75){
+    const chunk=list.slice(s,s+75);
+    try{
+      const r=await fetch('https://api.scryfall.com/cards/collection',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({identifiers:chunk.map(e=>e[1])})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json(),by=new Map();
+      for(const c of j.data||[]){
+        const u=c.image_uris||(c.card_faces&&c.card_faces[0]&&c.card_faces[0].image_uris);
+        if(!u||!u.normal)continue;
+        const rec={n:u.normal,l:u.large||u.normal,t:Date.now()},nm=c.name.toLowerCase();
+        by.set('c|'+c.set+'|'+c.collector_number,rec);by.set('n|'+c.set+'|'+nm,rec);by.set('n|'+c.set+'|'+nm.split(' // ')[0],rec);
+      }
+      chunk.forEach(([id])=>{cache[id]=by.get(id)||{n:null,t:Date.now()};});
+    }catch(e){failed=true;}
+    if(s+75<list.length)await new Promise(r=>setTimeout(r,120));
+  }
+  if(list.length&&!failed)store.set(CACHE_KEY,JSON.stringify(cache));
+  apply();
+}
+modeBtns.forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;store.set(MODE_KEY,mode);apply();if(mode==='official')lookup();}));
+apply();
+if(mode==='official')lookup();
 </script></body></html>'''
 page = PAGE.replace('@CSS@', CSS).replace('@OWNERTABS@', owner_tabs).replace('@SECTIONS@', owner_sections)
 open(R + '/index.html', 'w').write(page)
