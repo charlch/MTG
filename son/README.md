@@ -76,4 +76,4 @@ Tetsuko Umezawa, Fugitive is still cut from the first set, because it is partly 
 | Ferocity of the Hunt | [cards/ferocity-of-the-hunt.jpg](cards/ferocity-of-the-hunt.jpg) | retake-10.jpg |
 | Protégé's Awakening | [cards/proteges-awakening.jpg](cards/proteges-awakening.jpg) | retake-10.jpg |
 | Jiang Yanggu, Never Alone | [cards/jiang-yanggu-never-alone.jpg](cards/jiang-yanggu-never-alone.jpg) | retake-10.jpg |
-| Tam's Resistance | [cards/tams-resistance.jpg](cards/tams-resistance.jpg) | traded from Dad (cut from his photo-03) |
+| Tam's Resistance | [cards/tams-resistance.jpg](cards/tams-resistance.jpg) | - |

@@ -101,4 +101,4 @@ The card details are in the Google Sheet "MTG card list - FRA collection".
 | Dedicated Commons | [cards/dedicated-commons.jpg](cards/dedicated-commons.jpg) | photo-22.jpg |
 | Counter sticker sheet | [tokens-and-extras/counter-sticker-sheet.jpg](tokens-and-extras/counter-sticker-sheet.jpg) | photo-23.jpg |
 | Forest (foil, full-art) | [cards/forest-foil-full-art.jpg](cards/forest-foil-full-art.jpg) | photo-23.jpg |
-| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | traded from Son (cut from his photo-08) |
+| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | - |

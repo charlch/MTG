@@ -23,7 +23,7 @@ spells = {
  'Tricks': [C('Tethermage\'s Advantage','tethermages-advantage.jpg','{G}','+2/+2 and reach, and untap it'),
             C('Ferocity of the Hunt','ferocity-of-the-hunt.jpg','{1}{G}','Flash aura: +1/+0, deathtouch, and it comes back if it dies'),
             C('Predictive Preparations','predictive-preparations.jpg','{1}{W}','Counters on two creatures, with flashback'),
-            C('Tam\'s Resistance','tams-resistance.jpg','{1}{G/U}','Hybrid, so green pays for it; +1/+1 counter, vigilance, and a Jace with 4 loyalty (traded from Dad)')],
+            C('Tam\'s Resistance','tams-resistance.jpg','{1}{G/U}','Hybrid, so green pays for it; +1/+1 counter, vigilance, and a Jace with 4 loyalty')],
  'Lifegain and value': [C('Something Worth Saving','something-worth-saving.jpg','{1}{G}','Mill four, take a permanent, gain 1 life'),
                         C('Restore with Empathy','restore-with-empathy.jpg','{2}{G}','Return any permanent, gain 4 life'),
                         C('Way of the Mentor','way-of-the-mentor.jpg','{2}{W}','Makes a Jace with 5 loyalty; your life gain adds loyalty to it'),
@@ -39,7 +39,7 @@ side = {
 LANDS_GW = [land_tile('vigorbloom-annex.jpg', 'Vigorbloom Annex', 'Green/white land; enters tapped unless you control a planeswalker'),
             land_box('8 Forest', 'all 8 to add'), land_box('8 Plains', 'all 8 to add')]
 
-NOTE_GW = ('This is every playable green, white and colourless card in the collection plus Tam\'s Resistance, which came from Dad in a swap for Tetsuko Umezawa, Pursuer, '
+NOTE_GW = ('This is every playable green, white and colourless card in the collection, '
            'so there is no real choice left. The Jace tokens from Campus Crier, Keeper of the Quiet Hour, Tam\'s Resistance, Way of the Mentor and Hexhaven Battalion draw and surveil, '
            'and Lyra and Way of the Mentor reward every life you gain. Fblthp can fetch basics, so 17 lands can still reach seven mana for Ruric Thar. '
            'Living Library is the weakest card; swap it for a splashed No Admittance if you add Mountains.')

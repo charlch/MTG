@@ -112,7 +112,7 @@ wr_creatures = {
  '3 mana': [C('Rescue Girl, First Responder','rescue-girl-first-responder.jpg','{2}{W}','1/3 flyer that can rebuy enter effects'),
             C('Graft Surgeon','graft-surgeon.jpg','{2}{W}','2/2 that passes its counters on when it dies'),
             C('Hallway Heckler','hallway-heckler.jpg','{2}{R}','2/3 that loots every turn')],
- '4 mana': [C('Tetsuko Umezawa, Pursuer','tetsuko-umezawa-pursuer.jpg','{3}{R}','2/4 with double strike and prowess; pings small blockers (traded from Son)'),
+ '4 mana': [C('Tetsuko Umezawa, Pursuer','tetsuko-umezawa-pursuer.jpg','{3}{R}','2/4 with double strike and prowess; pings small blockers'),
             C('Heartstring Puller','heartstring-puller-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (foil copy)'),
             C('Heartstring Puller','heartstring-puller-non-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (non-foil copy)'),
             C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance')],
@@ -136,7 +136,7 @@ wr_side = {
                C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if the red is not showing up (it costs only colourless), or against graveyard decks. Swap for Hallway Heckler.')],
 }
 NOTE_WR = ('This is the strongest 40 I can make from the cards left after the black-green deck, so it shares its white cards with the White-Blue Flyers deck: build one at a time. '
-           'Tetsuko Umezawa, Pursuer came from Son in a swap for Tam\'s Resistance. Cut Hallway Heckler for Afterthought Sentry if the red does not show up. '
+           'Cut Hallway Heckler for Afterthought Sentry if the red does not show up. '
            'Bring in Refute Destiny against green or blue creatures. Dedicated Commons enters untapped once you have a Jace from Campus Crier or No Admittance.')
 DECKS = [
  dict(id='black-green', title='Black-Green', data=(creatures, spells, side), file='black-green.dck', lands=LANDS_BG, note=NOTE_BG,
