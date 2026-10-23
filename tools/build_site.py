@@ -113,13 +113,57 @@ NOTE_WU = ('Undulating Witness can fetch a basic land. If your opponents have lo
 NOTE_BG = ('Apex Witchstalker and Wrecking Gecko can fetch a basic land, which helps if the mana goes wrong. '
         'For a more consistent version, play 11 Forest and 6 Swamp and swap Hapatra and Apex Witchstalker '
         'for Loot, the Anomaly and Stingerquill Voxmancer.')
+LANDS_WR = ('<div class="lands">' + land_tile('dedicated-commons.jpg', 'Dedicated Commons', 'Red/white land; enters tapped unless you control a planeswalker')
+            + land_tile('plains.jpg', 'Plains', 'One of my two Plains')
+            + land_tile('plains-full-art.jpg', 'Plains (full-art)', 'The other Plains I have')
+            + land_tile('mountain-full-art.jpg', 'Mountain (full-art)', 'The one Mountain I have so far')
+            + land_box('9 Plains', '2 owned, 7 to add') + land_box('7 Mountain', '1 owned, 6 to add') + land_box('1 Dedicated Commons', 'owned') + '</div>')
+
+wr_creatures = {
+ '1 mana': [C('Stingerquill Voxmancer','stingerquill-voxmancer.jpg','{R/B}','Hybrid, so red pays for it; pings the opponent each turn'),
+            C('Marwyn, the Clearcutter','marwyn-the-clearcutter.jpg','{R}','2/1 for one; a legend, so it makes Wrath of the Bloodmane cheaper')],
+ '2 mana': [C('Campus Crier','campus-crier.jpg','{1}{W}','3/1; can later make a Jace planeswalker'),
+            C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-foil.jpg','{1}{W}','2/1 flyer; a legend (foil copy)'),
+            C('Fatehold Chronologist','fatehold-chronologist.jpg','{1}{W/U}','Hybrid, so white pays for it; 1/2 flyer whose prepared spell makes a 2/2 and surveils'),
+            C('Teyo, Lightshield Expert','teyo-lightshield-expert.jpg','{1}{W}','Flash; protects a creature from removal and grows it')],
+ '3 mana': [C('Rescue Girl, First Responder','rescue-girl-first-responder.jpg','{2}{W}','1/3 flyer that can rebuy enter effects'),
+            C('Graft Surgeon','graft-surgeon.jpg','{2}{W}','2/2 that passes its counters on when it dies'),
+            C('Hallway Heckler','hallway-heckler.jpg','{2}{R}','2/3 that loots every turn'),
+            C('Pyre Rhymer','pyre-rhymer.jpg','{1}{R}{R}','3/3 with prowess; the double red is the hardest cost in the deck')],
+ '4 mana': [C('Heartstring Puller','heartstring-puller-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (foil copy)'),
+            C('Heartstring Puller','heartstring-puller-non-foil.jpg','{3}{R}','Trample, and makes a 2/2 Cadet (non-foil copy)'),
+            C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance')],
+ '5 mana': [C('Saheeli, Consul of Oversight','saheeli-consul-of-oversight.jpg','{3}{W}{W}','4/4 flyer; makes Thopters when you surveil'),
+            C('Fateshaper Aspirant','fateshaper-aspirant.jpg','{4}{W}','3/4 that rebuys a legendary card or protects a creature')],
+}
+wr_spells = {
+ 'Removal': [C('No Admittance','no-admittance.jpg','{1}{R}','3 damage to any target; adds to your Jace'),
+             C('Wrath of the Bloodmane','wrath-of-the-bloodmane.jpg','{2}{R}','4 damage; one cheaper with a legend (Marwyn, Tomik, Teyo, Rescue Girl, Saheeli)'),
+             C('Memory Trap','memory-trap.jpg','{2}{W}','Exile a nonland permanent while it stays out (foil)'),
+             C('Gideon\'s Memorial','gideons-memorial.jpg','{1}{W}','Boosts your tokens; discard it for 4 damage to an attacker or blocker')],
+ 'Tricks and value': [C('Charge the Sanctum','charge-the-sanctum.jpg','{2}{R/W}','Hybrid; team pump, or a +1/+1 counter with first strike'),
+                      C('Blazing Crescendo','blazing-crescendo.jpg','{1}{R}','+3/+1 and you may play the top card of your library'),
+                      C('Predictive Preparations','predictive-preparations.jpg','{1}{W}','Counters on two creatures, with flashback'),
+                      C('Generous Revival','generous-revival.jpg','{2}{W}','Brings back a cheap creature, with flashback')],
+}
+wr_side = {
+ 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Exiles a green or blue creature; surveils'),
+               C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','The second copy; a legend, so only the first one stays in play'),
+               C('Artifist Acumen','artifist-acumen.jpg','{R}','First strike for your team and a card'),
+               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Colourless 2/2 that can fly')],
+}
+NOTE_WR = ('This is the strongest 40 I can make from the cards left after the black-green deck, so it shares its white cards with the White-Blue Flyers deck: build one at a time. '
+           'Pyre Rhymer needs two red sources and there are only 8, so cut it for Afterthought Sentry if the red does not show up. '
+           'Bring in Refute Destiny against green or blue creatures. Dedicated Commons enters untapped once you have a Jace from Campus Crier or No Admittance.')
 DECKS = [
  dict(id='black-green', title='Black-Green', data=(creatures, spells, side), file='black-green.dck', lands=LANDS_BG, note=NOTE_BG,
-      intro='A 40-card deck built from my Fate Reforged Arena cards. Green carries the early game and the big finishers. Black adds removal and graveyard value. Tap any card to see it full size.'),
+      intro='A 40-card deck built from my Reality Fracture cards. Green carries the early game and the big finishers. Black adds removal and graveyard value. Tap any card to see it full size.'),
  dict(id='eddy', title='Eddy', data=make_eddy(), file='eddy.dck', lands=LANDS_BG, note=NOTE_BG,
       intro='The same deck with one swap: Yargle, Glutton of Urborg comes in for Greenhouse Propagator. That trades a mana creature for a big 9/3 body. Tap any card to see it full size.'),
  dict(id='white-blue', title='White-Blue Flyers', data=(wu_creatures, wu_spells, wu_side), file='white-blue-flyers.dck', lands=LANDS_WU, note=NOTE_WU,
       intro='A different deck from the same cards: ten flyers and a surveil theme. Saheeli turns every surveil into a Thopter, and Way of the Mind Sculptor and Campus Crier make Jace planeswalkers that surveil and draw. It has less removal than the black-green decks, so it wins by evasion and card quality. Tap any card to see it full size.'),
+ dict(id='white-red', title='White-Red', data=(wr_creatures, wr_spells, wr_side), file='white-red.dck', lands=LANDS_WR, note=NOTE_WR,
+      intro='The best deck I can build from everything except the black-green cards. White supplies the best creatures: a run of cheap flyers, Blossom-Blessed Angel and Saheeli. Red adds the burn (No Admittance and Wrath of the Bloodmane, with Memory Trap and Gideon\'s Memorial from white) and two Heartstring Pullers. Tap any card to see it full size.'),
 ]
 for d in DECKS:
     for grp in d['data']:
@@ -136,6 +180,11 @@ def sym(cost):
         elif s_ == 'B': cls = 'b'
         elif s_ in ('G/W', 'R/G'): cls = 'hg'
         elif s_ == 'R/B': cls = 'hb'
+        elif s_ == 'R': cls = 'r'
+        elif s_ == 'W': cls = 'w'
+        elif s_ == 'R/W': cls = 'hrw'
+        elif s_ == 'U': cls = 'u'
+        elif s_ == 'W/U': cls = 'hwu'
         out += '<i class="s %s">%s</i>' % (cls, html.escape(s_.replace('/', '')))
     return out
 def tile(c):
@@ -186,7 +235,7 @@ CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'site.css.ht
 PAGE = '''<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MTG Decks</title>
-<meta name="description" content="40-card decks built from my Fate Reforged Arena cards.">
+<meta name="description" content="40-card decks built from my Reality Fracture cards.">
 @CSS@</head><body><main>
 <header><h1>MTG Decks</h1></header>
 <div class="tabs" role="tablist" aria-label="Decks">@TABS@</div>

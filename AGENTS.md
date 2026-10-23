@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This repo holds photos of my Fate Reforged Arena (FRA) cards, deck lists built from them, and a static GitHub Pages site that shows the decks.
+This repo holds photos of my Reality Fracture (FRA) cards, deck lists built from them, and a static GitHub Pages site that shows the decks.
 
 ## Layout
 

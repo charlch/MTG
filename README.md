@@ -1,4 +1,4 @@
-# MTG collection photos (Fate Reforged Arena / FRA)
+# MTG collection photos (Reality Fracture / FRA)
 
 Photos of my FRA cards, one image per card, plus the original photos they were cut from.
 
