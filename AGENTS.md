@@ -41,7 +41,7 @@ Work out whose cards or deck it is before touching anything, and only edit that 
 
 Whenever you suggest a new deck, also add it to the repo in the same change. `<p>` below means `dad` or `son`.
 
-1. Write a `.dck` file for it in `<p>/decks/`. Use plain card names with no set codes. The main deck must be 40 cards including lands, and the sideboard lists the swap-in options.
+1. Write a `.dck` file for it in `<p>/decks/`. Use plain card names with no set codes. The main deck must be 40 cards including lands (23 spells and 17 lands, or 22 and 18 if there are not enough playable cards), and the sideboard lists the swap-in options.
 2. Add a deck entry to `DECKS` in `<p>/decks.py`. Each entry needs an id (unique within that person), a title, the `.dck` file name, an intro, its cards grouped for display, its lands and a note. The `.dck` link at the top of each tab comes from the entry's file name. Use `C(...)`, `land_tile(...)` and `land_box(...)` from `deckkit`, as `dad/decks.py` does. Use each card's real name so the official image can be found.
 3. Run `python3 tools/build_site.py` to rebuild `index.html` and the thumbnails, then check the new tab in a browser at desktop and phone widths. Links to a deck look like `index.html#dad/black-green`.
 4. Commit and push to `main`.
@@ -55,5 +55,5 @@ Put the card photos in `<p>/cards/` (tokens and the like in `<p>/tokens-and-extr
 ## Notes
 
 - Every card image used on the page must exist in that person's `cards/` folder. If the generator fails on a missing file, check the file name against the list in `<p>/cards/`.
-- The generator also checks that each deck has 23 spells and that its `.dck` file exists in `<p>/decks/`.
+- The generator also checks that each deck has 23 spells (22 is allowed when a collection has too few playable cards in its colours; the page then shows 18 lands) and that its `.dck` file exists in `<p>/decks/`.
 - Dad: the only basic lands photographed so far are one foil Forest, two Plains and a full-art Mountain. All other basics in a deck list are lands still to be added.

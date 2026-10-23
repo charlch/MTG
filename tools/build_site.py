@@ -31,7 +31,7 @@ def thumb(owner, fn):
 def mv(cost):
     n = 0
     for s in re.findall(r'\{([^}]+)\}', cost):
-        n += int(s) if s.isdigit() else 1
+        n += int(s) if s.isdigit() else (0 if s == 'X' else 1)
     return n
 
 
@@ -97,13 +97,13 @@ SIDE_SUB = 'Swap these in against a specific opponent, or if the main deck is no
 PANEL = '''<div class="panel" id="panel-@OID@-@ID@" role="tabpanel" aria-labelledby="tab-@OID@-@ID@" hidden>
 <p class="dl"><a href="@OID@/decks/@FILE@" download>@FILE@</a> <span>(deck file, .dck format)</span></p>
 <p class="intro">@INTRO@</p>
-<div class="stats"><div class="stat"><b>23</b><span>spells</span></div><div class="stat"><b>@NC@</b><span>creatures</span></div><div class="stat"><b>@NS@</b><span>non-creature spells</span></div><div class="stat"><b>17</b><span>lands</span></div><div class="stat"><b>40</b><span>cards in total</span></div></div>
-<div class="curve" role="img" aria-label="Mana curve of the 23 spells">@CURVE@</div>
-<p class="sub">Mana value of the 23 spells.</p>
+<div class="stats"><div class="stat"><b>@NSP@</b><span>spells</span></div><div class="stat"><b>@NC@</b><span>creatures</span></div><div class="stat"><b>@NS@</b><span>non-creature spells</span></div><div class="stat"><b>@NL@</b><span>lands</span></div><div class="stat"><b>40</b><span>cards in total</span></div></div>
+<div class="curve" role="img" aria-label="Mana curve of the @NSP@ spells">@CURVE@</div>
+<p class="sub">Mana value of the @NSP@ spells.</p>
 <h2>Main deck</h2>
 <h2 class="h2s">Creatures (@NC@)</h2>@CREATURES@
 <h2 class="h2s">Spells (@NS@)</h2>@SPELLS@
-<h2 class="h2s">Lands (17)</h2>
+<h2 class="h2s">Lands (@NL@)</h2>
 @LANDS@
 <h2>Sideboard</h2><p class="sub">@SIDESUB@</p>@SIDE@
 <p class="note">@NOTE@</p>
@@ -113,13 +113,14 @@ PANEL = '''<div class="panel" id="panel-@OID@-@ID@" role="tabpanel" aria-labelle
 def render(o, d):
     cr, sp, sd = d['data']
     main_cards = [c for g in (cr, sp) for cs in g.values() for c in cs]
-    assert len(main_cards) == 23, (o, d['id'], len(main_cards))
+    # normally 23 spells + 17 lands; a person with too few playable cards may run 22 + 18
+    assert len(main_cards) in (22, 23), (o, d['id'], len(main_cards))
     curve = {}
     for c in main_cards:
         m = min(mv(c['cost']), 7); curve[m] = curve.get(m, 0) + 1
     ch = ''.join('<div class="bar"><span style="height:%dpx"></span><b>%d</b><i>%s</i></div>' % (curve.get(m, 0) * 96 // max(curve.values()), curve.get(m, 0), '7+' if m == 7 else m) for m in range(1, 8))
     assert os.path.exists(f"{R}/{o}/decks/{d['file']}"), (o, d['file'])
-    rep = {'@OID@': o, '@ID@': d['id'], '@INTRO@': html.escape(d['intro']), '@FILE@': d['file'],
+    rep = {'@NSP@': str(len(main_cards)), '@NL@': str(40 - len(main_cards)), '@OID@': o, '@ID@': d['id'], '@INTRO@': html.escape(d['intro']), '@FILE@': d['file'],
            '@NC@': str(sum(len(v) for v in cr.values())), '@NS@': str(sum(len(v) for v in sp.values())),
            '@CURVE@': ch, '@CREATURES@': group_html(o, cr), '@SPELLS@': group_html(o, sp), '@SIDE@': group_html(o, sd),
            '@SIDESUB@': SIDE_SUB, '@NOTE@': html.escape(d['note']), '@LANDS@': lands_html(o, d['lands'])}
