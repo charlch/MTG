@@ -36,10 +36,10 @@ spells = {
            C('Bestial Incursion','bestial-incursion.jpg','{3}{G}','4/4 trampler, with flashback')],
 }
 side = {
- 'Sideboard': [C('Solve for Disappointment','solve-for-disappointment.jpg','{1}{B}','Take their best nonland card'),
-               C('Cast Away Doubt','cast-away-doubt.jpg','{2}{B}','Draw two; 2 damage to each player'),
-               C('Puppet Crafting','puppet-crafting.jpg','{1}{G}','Needs an artifact or enchantment to target'),
-               C('Yargle, Glutton of Urborg','yargle-glutton-of-urborg.jpg','{4}{B}','9/3 with no abilities')],
+ 'Sideboard': [C('Solve for Disappointment','solve-for-disappointment.jpg','{1}{B}','Bring in against slow decks, or ones built around a bomb or planeswalker, to take it out of their hand. Swap for Emergency Phytomedic.'),
+               C('Cast Away Doubt','cast-away-doubt.jpg','{2}{B}','Bring in against slow decks when you are not racing, because it hurts you too (2 damage each). Swap for Restore with Empathy.'),
+               C('Puppet Crafting','puppet-crafting.jpg','{1}{G}','Bring in against slow decks that let you set up a Heartwood token (from Konstrari Improviser or Hungering Puppetbeast) to turn into a 5/5. Swap for Budding Insurgent.'),
+               C('Yargle, Glutton of Urborg','yargle-glutton-of-urborg.jpg','{4}{B}','Bring in against decks with little removal and few 3-power creatures, where a 9/3 for five dominates. Swap for Greenhouse Propagator (that is the Eddy deck).')],
  'Also considered': [C('Loot, the Anomaly','loot-the-anomaly.jpg','{2}{B}','Printed -2/4; plays as a 2/4 attacker'),
                      C('Stingerquill Voxmancer','stingerquill-voxmancer.jpg','{R/B}','Hybrid one-drop that pings the opponent'),
                      C('Eye of Jace','eye-of-jace.jpg','{1}','Colourless; needs a full graveyard')],
@@ -59,7 +59,9 @@ def make_eddy():
     cr['3 mana'].remove(prop)
     yar = [c for c in sd['Sideboard'] if c['name'].startswith('Yargle')][0]
     sd['Sideboard'].remove(yar)
+    yar['note'] = '9/3 with no abilities'
     cr['5 mana'].append(yar)
+    prop['note'] = 'Bring in against fast decks, or when your hand is clogged with five-drops, for early mana and life. Swap for Yargle (that is the Black-Green deck).'
     sd['Sideboard'].insert(0, prop)
     return cr, sp, sd
 
@@ -103,10 +105,10 @@ wu_spells = {
            C('Eye of Jace','eye-of-jace.jpg','{1}','Surveils every turn')],
 }
 wu_side = {
- 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Exiles a green or blue creature; surveils'),
-               C('Precise Redaction','precise-redaction.jpg','{1}{U}','Counters a white or black spell'),
-               C('Generous Revival','generous-revival.jpg','{2}{W}','Brings back a cheap creature, with flashback'),
-               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Colourless 2/2 that can fly')],
+ 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Bring in against decks full of green or blue creatures. Swap for Unsummon.'),
+               C('Precise Redaction','precise-redaction.jpg','{1}{U}','Bring in against white or black decks that lean on spells such as removal; keep two mana open. Swap for Eye of Jace.'),
+               C('Generous Revival','generous-revival.jpg','{2}{W}','Bring in against removal-heavy decks in long games; it rebuys any creature costing 3 or less. Swap for Predictive Preparations.'),
+               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if your colours are awkward, or against decks that reuse their graveyard (it exiles a card when it attacks). Swap for Graft Surgeon.')],
 }
 NOTE_WU = ('Undulating Witness can fetch a basic land. If your opponents have lots of green or blue creatures, '
            'bring in Refute Destiny. Samut, Tyrant of Naktamun and Emergency Phytomedic are the next cuts to consider.')
@@ -147,10 +149,10 @@ wr_spells = {
                       C('Generous Revival','generous-revival.jpg','{2}{W}','Brings back a cheap creature, with flashback')],
 }
 wr_side = {
- 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Exiles a green or blue creature; surveils'),
-               C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','The second copy; a legend, so only the first one stays in play'),
-               C('Artifist Acumen','artifist-acumen.jpg','{R}','First strike for your team and a card'),
-               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Colourless 2/2 that can fly')],
+ 'Sideboard': [C('Refute Destiny','refute-destiny.jpg','{1}{W}','Bring in against decks full of green or blue creatures. Swap for Predictive Preparations.'),
+               C('Tomik, Orzhov Lawmage','tomik-orzhov-lawmage-non-foil.jpg','{1}{W}','Bring in against decks with no flyers or reach, for more cheap evasion (only one Tomik can stay in play). Swap for Stingerquill Voxmancer.'),
+               C('Artifist Acumen','artifist-acumen.jpg','{R}','Bring in against decks with lots of ground blockers, where first strike for your team wins combat. Swap for Blazing Crescendo.'),
+               C('Afterthought Sentry','afterthought-sentry.jpg','{2}','Bring in if the red is not showing up (it costs only colourless), or against graveyard decks. Swap for Pyre Rhymer.')],
 }
 NOTE_WR = ('This is the strongest 40 I can make from the cards left after the black-green deck, so it shares its white cards with the White-Blue Flyers deck: build one at a time. '
            'Pyre Rhymer needs two red sources and there are only 8, so cut it for Afterthought Sentry if the red does not show up. '
