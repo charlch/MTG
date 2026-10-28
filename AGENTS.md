@@ -50,7 +50,7 @@ If you only swap a few cards in an existing deck to make a variant, treat it as 
 
 ## Adding photos for a new set of cards
 
-Put the card photos in `<p>/cards/` (tokens and the like in `<p>/tokens-and-extras/`) and the originals in `<p>/photos/`. Add the new cards to that person's `README.md` index. The "All cards" tab on each person's page is generated from the tables in that README (Dad's `| Item | Image | Photo |` layout or Son's `| Card | Copies | Image | Set / notes | Photos |` layout), so keep those tables accurate and rebuild with `tools/build_site.py`; anything under a "Not in the latest photos" heading is left out.
+Put the card photos in `<p>/cards/` (tokens and the like in `<p>/tokens-and-extras/`) and the originals in `<p>/photos/`. Add the new cards to that person's `README.md` index. The "All cards" tab on each person's page is generated from the tables in that README (Dad's `| Item | Image | Photo |` layout or Son's `| Card | Copies | Image | Set / notes | Photos |` layout), so keep those tables accurate and rebuild with `tools/build_site.py`; anything under a "Not in the latest photos" heading is left out. The sort box on that tab sorts by name and set from the README, and by mana value, power, toughness, rarity, colour, card type and price from the card data Scryfall returns in the browser (cards Scryfall doesn't return, such as basic lands, go last). Like the official images, this was only tested against a mocked Scryfall.
 
 ## Notes
 

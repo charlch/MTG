@@ -191,10 +191,10 @@ def all_tile(o, r):
     all_thumb(o, r['file'])
     n = html.escape(r['name'])
     cnt = '<span class="cost">&times;%d</span>' % r['copies'] if r['copies'] > 1 else ''
-    return ('<figure class="card" data-search="%s"><button type="button" data-full="%s/%s" data-own-full="%s/%s" data-name="%s">'
+    return ('<figure class="card" data-search="%s" data-sort-name="%s" data-sort-set="%s"><button type="button" data-full="%s/%s" data-own-full="%s/%s" data-name="%s">'
             '<img loading="lazy" src="%s/thumbs/%s" data-own="%s/thumbs/%s" alt="%s"%s></button>'
-            '<figcaption><b>%s</b>%s<em>%s</em></figcaption></figure>'
-            % (html.escape((r['name'] + ' ' + r['tag']).lower()), o, r['file'], o, r['file'], n, o, r['file'], o, r['file'], n,
+            '<figcaption><b>%s</b>%s<em>%s</em><small class="meta"></small></figcaption></figure>'
+            % (html.escape((r['name'] + ' ' + r['tag']).lower()), html.escape(r['card']), html.escape(r['set']), o, r['file'], o, r['file'], n, o, r['file'], o, r['file'], n,
                sf_attrs(r['card'], r['set'], None, r['official']), n, cnt, html.escape(r['tag'])))
 
 
@@ -205,7 +205,12 @@ def render_all(o, label):
              '<div class="stat"><b>%d</b><span>tokens and extras</span></div></div>' % (total, len(cards), len(tokens)))
     h = ('<div class="panel" id="panel-%s-all" role="tabpanel" aria-labelledby="tab-%s-all" hidden>'
          '<p class="intro">Every card in %s\'s collection, in alphabetical order. Tap a card to see it larger. &times;2 means there are two copies.</p>%s'
-         '<p class="find"><input type="search" data-filter placeholder="Search by name or set (for example TLA or foil)" aria-label="Search cards"> <span class="found" aria-live="polite"></span></p>'
+         '<div class="find"><label class="sortl">Sort by <select data-sort aria-label="Sort cards by">'
+         '<option value="name">Name</option><option value="mv">Mana value</option><option value="power">Power</option><option value="toughness">Toughness</option>'
+         '<option value="rarity">Rarity</option><option value="price">Price</option><option value="color">Colour</option><option value="type">Card type</option><option value="set">Set</option></select></label> '
+         '<button type="button" class="dir" data-dir aria-label="Reverse the sort order">A to Z</button> '
+         '<input type="search" data-filter placeholder="Search by name or set (for example TLA or foil)" aria-label="Search cards"> <span class="found" aria-live="polite"></span></div>'
+         '<p class="sub sortnote" aria-live="polite"></p>'
          % (o, o, html.escape(label), stats))
     h += '<h2 class="h2s">Cards (%d)</h2><div class="grid">%s</div>' % (total, ''.join(all_tile(o, r) for r in cards))
     if tokens:
@@ -263,7 +268,7 @@ window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1));
 /* Official card images: looked up on Scryfall in the browser (one batch request, cached for a week).
    Any problem (offline, blocked, card not found, image fails) falls back to our own photo. */
-const MODE_KEY='mtg-img-mode',CACHE_KEY='mtg-official-v1',TTL=7*864e5;
+const MODE_KEY='mtg-img-mode',CACHE_KEY='mtg-official-v2',TTL=7*864e5;
 const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 let mode=store.get(MODE_KEY)==='mine'?'mine':'official',failed=false,cache={};
 try{cache=JSON.parse(store.get(CACHE_KEY)||'{}')||{};}catch(e){cache={};}
@@ -298,7 +303,8 @@ async function lookup(){
       for(const c of j.data||[]){
         const u=c.image_uris||(c.card_faces&&c.card_faces[0]&&c.card_faces[0].image_uris);
         if(!u||!u.normal)continue;
-        const rec={n:u.normal,l:u.large||u.normal,t:Date.now()},nm=c.name.toLowerCase();
+        const f0=c.card_faces&&c.card_faces[0]||{},pr=c.prices||{};
+        const rec={n:u.normal,l:u.large||u.normal,t:Date.now(),m:{cmc:c.cmc,p:c.power!=null?c.power:f0.power,th:c.toughness!=null?c.toughness:f0.toughness,r:c.rarity,c:(c.colors||f0.colors||[]).join(''),ty:c.type_line||'',usd:parseFloat(pr.usd||pr.usd_foil||pr.usd_etched)||null}},nm=c.name.toLowerCase();
         by.set('c|'+c.set+'|'+c.collector_number,rec);by.set('n|'+c.set+'|'+nm,rec);by.set('n|'+c.set+'|'+nm.split(' // ')[0],rec);
       }
       chunk.forEach(([id])=>{cache[id]=by.get(id)||{n:null,t:Date.now()};});
@@ -306,11 +312,58 @@ async function lookup(){
     if(s+75<list.length)await new Promise(r=>setTimeout(r,120));
   }
   if(list.length&&!failed)store.set(CACHE_KEY,JSON.stringify(cache));
-  apply();
+  apply();sortAll();
 }
 modeBtns.forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;store.set(MODE_KEY,mode);apply();if(mode==='official')lookup();}));
 apply();
-if(mode==='official')lookup();
+lookup();
+/* All cards tab: sorting. Name and set always work; the rest use the card data Scryfall returns (mana value, power, rarity, price...). */
+const RAR={common:1,uncommon:2,rare:3,mythic:4,special:5,bonus:5},COL='WUBRG',TYPES=['Land','Creature','Planeswalker','Artifact','Enchantment','Instant','Sorcery'];
+const colorRank=c=>c===''?100:c.length>1?50+c.length:COL.indexOf(c)+1;
+const typeRank=t=>{const i=TYPES.findIndex(x=>t.includes(x));return i<0?99:i;};
+const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n;};
+const KEYS={
+  name:{get:f=>f.dataset.sortName,lo:'A to Z',hi:'Z to A',txt:1},
+  set:{get:f=>f.dataset.sortSet,lo:'A to Z',hi:'Z to A',txt:1},
+  mv:{get:(f,m)=>m&&m.cmc!=null?m.cmc:null,lo:'Low to high',hi:'High to low'},
+  power:{get:(f,m)=>m?num(m.p):null,lo:'Low to high',hi:'High to low',first:'hi'},
+  toughness:{get:(f,m)=>m?num(m.th):null,lo:'Low to high',hi:'High to low',first:'hi'},
+  rarity:{get:(f,m)=>m&&m.r?RAR[m.r]||0:null,lo:'Common first',hi:'Rarest first',first:'hi'},
+  price:{get:(f,m)=>m&&m.usd!=null?m.usd:null,lo:'Cheapest first',hi:'Most valuable first',first:'hi'},
+  color:{get:(f,m)=>m?colorRank(m.c):null,lo:'W U B R G, then gold',hi:'Gold first',first:'lo'},
+  type:{get:(f,m)=>m?typeRank(m.ty):null,lo:'Lands first',hi:'Lands last',first:'lo'}
+};
+const metaOf=f=>{const i=f.querySelector('img[data-sf-set]'),c=i&&cache[idOf(i)];return c&&c.m||null;};
+function metaText(m){
+  const b=[];
+  if(m.cmc!=null)b.push('MV '+m.cmc);
+  if(m.p!=null&&m.th!=null)b.push(m.p+'/'+m.th);
+  if(m.r)b.push(m.r[0].toUpperCase()+m.r.slice(1));
+  if(m.usd!=null)b.push('$'+m.usd.toFixed(2));
+  return b.join(' · ');
+}
+function sortAll(){
+  document.querySelectorAll('.panel[id$="-all"]').forEach(p=>{
+    const sel=p.querySelector('[data-sort]'),btn=p.querySelector('[data-dir]'),k=KEYS[sel.value],note=p.querySelector('.sortnote'),grid=p.querySelector('.grid');
+    const figs=[...grid.children];
+    figs.forEach(f=>{const m=metaOf(f);f.querySelector('.meta').textContent=m?metaText(m):'';});
+    const desc=btn.dataset.desc==='1';
+    btn.textContent=desc?k.hi:k.lo;
+    let nodata=0;
+    const rows=figs.map((f,i)=>{const v=k.get(f,metaOf(f));if(v==null)nodata++;return {f,i,v};});
+    rows.sort((a,b)=>{
+      if(a.v==null||b.v==null)return a.v==null&&b.v==null?a.i-b.i:a.v==null?1:-1;  /* cards without data always go last */
+      let d=k.txt?a.v.localeCompare(b.v,'en',{sensitivity:'base'}):a.v-b.v;
+      if(d===0)d=a.f.dataset.sortName.localeCompare(b.f.dataset.sortName,'en',{sensitivity:'base'});
+      return desc?(k.txt?-d:-d):d;
+    });
+    rows.forEach(r=>grid.appendChild(r.f));
+    note.textContent=k.txt?'':nodata===figs.length?'Sorting by this needs card details from Scryfall, which could not be loaded right now.':nodata?nodata+' card'+(nodata>1?'s have':' has')+' no Scryfall details (basic lands and special printings), so they are listed last.':'';
+  });
+}
+document.querySelectorAll('.panel[id$="-all"] [data-sort]').forEach(sel=>sel.addEventListener('change',()=>{const p=sel.closest('.panel'),btn=p.querySelector('[data-dir]'),k=KEYS[sel.value];btn.dataset.desc=k.first==='hi'?'1':'0';sortAll();}));
+document.querySelectorAll('.panel[id$="-all"] [data-dir]').forEach(btn=>btn.addEventListener('click',()=>{btn.dataset.desc=btn.dataset.desc==='1'?'0':'1';sortAll();}));
+sortAll();
 </script></body></html>'''
 page = PAGE.replace('@CSS@', CSS).replace('@OWNERTABS@', owner_tabs).replace('@SECTIONS@', owner_sections)
 open(R + '/index.html', 'w').write(page)
