@@ -143,17 +143,86 @@ def load(o):
     return decks
 
 
+
+NO_OFFICIAL = ('forest', 'plains', 'island', 'swamp', 'mountain')
+
+
+def read_inventory(o):
+    """Every card and token listed in <o>/README.md tables -> (cards, tokens), each a list of dicts.
+    Accepts both layouts: Dad's  | Item | Image | Photo |  and Son's  | Card | Copies | Image | Set / notes | Photos |."""
+    cards, tokens = [], []
+    text = open(f'{R}/{o}/README.md', encoding='utf-8').read()
+    text = text.split('## Not in the latest photos')[0]  # cards that are no longer in the collection are not listed
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip('|').split('|')] if line.startswith('|') else []
+        m = next((re.match(r'\[(.+?)\]\((.+?)\)$', c) for c in cells if re.match(r'\[.+?\]\(.+?\)$', c)), None)
+        if not m or not cells:
+            continue
+        path = m.group(2)
+        name = cells[0]
+        idx = cells.index(m.group(0))
+        copies = int(cells[1]) if idx == 2 and cells[1].isdigit() else 1
+        notes = cells[3] if idx == 2 and len(cells) > 3 else ''
+        assert os.path.exists(f'{R}/{o}/{path}'), (o, path)
+        base = re.sub(r'\s*\(.*?\)', '', name).strip()
+        base = re.sub(r'\s+token$', '', base) if path.startswith('tokens') else base
+        label = name
+        setcode = (notes.split(',')[0].split(' ')[0].strip().lower() if notes else 'fra') or 'fra'
+        tag = ', '.join(x for x in [notes] if x)
+        if 'foil' in name.lower() and 'foil' not in tag.lower():
+            tag = (tag + ', ' if tag else '') + ('non-foil' if 'non-foil' in name.lower() else 'foil')
+        official = (path.startswith('cards/') and setcode not in ('spg',) and base.lower() not in NO_OFFICIAL
+                    and not re.search(r'full-art', name.lower()))
+        rec = dict(name=label, card=base, file=path, copies=copies, set=setcode, tag=tag or 'FRA', official=official)
+        (tokens if path.startswith('tokens') else cards).append(rec)
+    key = lambda r: re.sub(r'[^a-z0-9]', '', r['card'].lower() + r['name'].lower())
+    return sorted(cards, key=key), sorted(tokens, key=key)
+
+
+def all_thumb(o, rel):
+    out = f'{R}/{o}/thumbs/{rel}'
+    if not os.path.exists(out):
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        im = cv2.imread(f'{R}/{o}/{rel}'); h, w = im.shape[:2]
+        cv2.imwrite(out, cv2.resize(im, (360, int(h * 360 / w)), interpolation=cv2.INTER_AREA), [cv2.IMWRITE_JPEG_QUALITY, 80])
+
+
+def all_tile(o, r):
+    all_thumb(o, r['file'])
+    n = html.escape(r['name'])
+    cnt = '<span class="cost">&times;%d</span>' % r['copies'] if r['copies'] > 1 else ''
+    return ('<figure class="card" data-search="%s"><button type="button" data-full="%s/%s" data-own-full="%s/%s" data-name="%s">'
+            '<img loading="lazy" src="%s/thumbs/%s" data-own="%s/thumbs/%s" alt="%s"%s></button>'
+            '<figcaption><b>%s</b>%s<em>%s</em></figcaption></figure>'
+            % (html.escape((r['name'] + ' ' + r['tag']).lower()), o, r['file'], o, r['file'], n, o, r['file'], o, r['file'], n,
+               sf_attrs(r['card'], r['set'], None, r['official']), n, cnt, html.escape(r['tag'])))
+
+
+def render_all(o, label):
+    cards, tokens = read_inventory(o)
+    total = sum(r['copies'] for r in cards)
+    stats = ('<div class="stats"><div class="stat"><b>%d</b><span>cards in total</span></div><div class="stat"><b>%d</b><span>different cards</span></div>'
+             '<div class="stat"><b>%d</b><span>tokens and extras</span></div></div>' % (total, len(cards), len(tokens)))
+    h = ('<div class="panel" id="panel-%s-all" role="tabpanel" aria-labelledby="tab-%s-all" hidden>'
+         '<p class="intro">Every card in %s\'s collection, in alphabetical order. Tap a card to see it larger. &times;2 means there are two copies.</p>%s'
+         '<p class="find"><input type="search" data-filter placeholder="Search by name or set (for example TLA or foil)" aria-label="Search cards"> <span class="found" aria-live="polite"></span></p>'
+         % (o, o, html.escape(label), stats))
+    h += '<h2 class="h2s">Cards (%d)</h2><div class="grid">%s</div>' % (total, ''.join(all_tile(o, r) for r in cards))
+    if tokens:
+        h += '<h2 class="h2s">Tokens and extras (%d)</h2><div class="grid">%s</div>' % (sum(r['copies'] for r in tokens), ''.join(all_tile(o, r) for r in tokens))
+    return h + '</div>'
+
+
 owner_tabs, owner_sections = '', ''
 for o, label in OWNERS:
     decks = load(o)
     owner_tabs += ('<button role="tab" id="otab-%s" aria-controls="owner-%s" aria-selected="false" data-owner-tab data-owner="%s">%s</button>'
                    % (o, o, o, html.escape(label)))
-    if decks:
-        dtabs = ''.join('<button role="tab" id="tab-%s-%s" aria-controls="panel-%s-%s" aria-selected="false" data-deck-tab data-owner="%s" data-deck="%s">%s</button>'
-                        % (o, d['id'], o, d['id'], o, d['id'], html.escape(d['title'])) for d in decks)
-        inner = '<div class="tabs decks" role="tablist" aria-label="%s\'s decks">%s</div>%s' % (html.escape(label), dtabs, ''.join(render(o, d) for d in decks))
-    else:
-        inner = '<p class="empty">No decks here yet.</p>'
+    dtabs = ''.join('<button role="tab" id="tab-%s-%s" aria-controls="panel-%s-%s" aria-selected="false" data-deck-tab data-owner="%s" data-deck="%s">%s</button>'
+                    % (o, d['id'], o, d['id'], o, d['id'], html.escape(d['title'])) for d in decks)
+    dtabs += ('<button role="tab" id="tab-%s-all" aria-controls="panel-%s-all" aria-selected="false" data-deck-tab data-owner="%s" data-deck="all">All cards</button>' % (o, o, o))
+    inner = ('<div class="tabs decks" role="tablist" aria-label="%s\'s decks and cards">%s</div>%s%s'
+             % (html.escape(label), dtabs, ''.join(render(o, d) for d in decks), render_all(o, label)))
     owner_sections += '<section class="owner" id="owner-%s" role="tabpanel" aria-labelledby="otab-%s" hidden>%s</section>' % (o, o, inner)
 
 CSS = open(os.path.join(HERE, 'site.css.html')).read()
@@ -189,6 +258,7 @@ function go(h){history.replaceState(null,'','#'+h);show(h);}
 function wire(list,hash){list.forEach((t,i)=>{t.addEventListener('click',()=>go(hash(t)));t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const g=list.filter(x=>x.parentNode===t.parentNode),k=g.indexOf(t),n=g[(k+(e.key==='ArrowRight'?1:g.length-1))%g.length];n.focus();n.click();}});});}
 wire(otabs,t=>t.dataset.owner+(last[t.dataset.owner]?'/'+last[t.dataset.owner]:''));
 wire(dtabs,t=>t.dataset.owner+'/'+t.dataset.deck);
+document.querySelectorAll('[data-filter]').forEach(inp=>inp.addEventListener('input',()=>{const p=inp.closest('.panel'),q=inp.value.trim().toLowerCase(),fs=[...p.querySelectorAll('figure[data-search]')];let n=0;fs.forEach(f=>{const on=!q||f.dataset.search.includes(q);f.hidden=!on;if(on)n++;});p.querySelector('.found').textContent=q?n+' shown':'';}));
 window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1));
 /* Official card images: looked up on Scryfall in the browser (one batch request, cached for a week).
