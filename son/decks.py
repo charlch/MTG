@@ -43,8 +43,58 @@ NOTE_GW = ('This is every playable green, white and colourless card in the colle
            'and Lyra and Way of the Mentor reward every life you gain. Fblthp can fetch basics, so the 18 lands can still hit seven mana for Ruric Thar. '
            'Living Library is the weakest card; swap it for a splashed No Admittance if you add Mountains.')
 
+# ---- Best deck: green-white using the full collection (photos of 2026-10-28) ----
+b_creatures = {
+ '1 mana': [C('Emergency Phytomedic','emergency-phytomedic.jpg','{G/W}','1/1 that enters prepared: a cheap +1/+1 counter and 1 life'),
+            C('Liliana the Faultless','liliana-the-faultless.jpg','{W}','1/1 that gains you 1 life whenever another creature or planeswalker enters')],
+ '2 mana': [C('Campus Crier','campus-crier.jpg','{1}{W}','3/1; can later make a Jace planeswalker'),
+            C('Marwyn, the Preserver','marwyn-the-preserver.jpg','{1}{G}','3/2 for two; can return lands'),
+            C('Sureshot Sower','sureshot-sower.jpg','{1}{G}','3/1 with reach, or discard to kill a flyer'),
+            C('Solarium Sentry','solarium-sentry.jpg','{G}{W}','3/3 for two; gains 2 life when an opponent casts a cheap spell'),
+            C('Jennifer Walters','jennifer-walters-foil.jpg','{1}{W}','2/3 that stops opponents casting spells on your turn; late on, pay 6 to turn her into a 6/6', set='msh'),
+            C('Knight of Wundagore','knight-of-wundagore.jpg','{1}{G}','2/1 trample that doubles up +1/+1 counters you put on your other creatures', set='msh')],
+ '3 mana': [C('Lyra, Archangel of Dawn','lyra-archangel-of-dawn.jpg','{2}{W}','3/3 flyer that grows every time you gain life, and so do your other Angels'),
+            C('Keeper of the Quiet Hour','keeper-of-the-quiet-hour.jpg','{3}','3/2 colourless; makes a Jace planeswalker')],
+ '4 mana': [C('Blossom-Blessed Angel','blossom-blessed-angel.jpg','{3}{W}','2/4 flying, vigilance; its prepared spell gains life'),
+            C('Galion, Elvenking\'s Butler','galion-elvenkings-butler.jpg','{2}{G}{G}','4/4 for four; when it attacks, another creature becomes as big as it', set='hob'),
+            C('Jiang Yanggu, Never Alone','jiang-yanggu-never-alone.jpg','{3}{G}','2/2 that makes Mowu, a 3/3 Dog, and untaps your tokens')],
+ 'X and big': [C('Fblthp, Knows the Way','fblthp-knows-the-way.jpg','{X}{G}{G}','Fetches X basic lands with different names; power equals the land types you have'),
+               C('Ruric Thar, Magecrusher','ruric-thar-magecrusher.jpg','{5}{G}{G}','7/7 reach, vigilance, trample; cannot be countered')],
+}
+b_spells = {
+ 'Removal': [C('Helicarrier Strike','helicarrier-strike.jpg','{W}','Instant: 2 damage to an attacker or blocker (4 if you tap creatures with 2 power for teamwork)', set='msh'),
+             C('Go Nuts!','go-nuts.jpg','{G}','Counter on your creature, or it fights theirs (both if you pay teamwork 3)', set='msh'),
+             C('Prophesied End','prophesied-end.jpg','{1}{W}','Destroy a creature (they draw a card unless it was attacking)'),
+             C('Compel Brutality','compel-brutality.jpg','{1}{G}','Your creature deals damage to theirs'),
+             C('Sandbenders\' Storm','sandbenders-storm.jpg','{3}{W}','Instant: destroy a creature with power 4 or more, or earthbend 3', set='tla'),
+             C('Settle the Wreckage','settle-the-wreckage.jpg','{2}{W}{W}','Instant: exile every creature that attacks you (you get basic lands for them)', set='hob')],
+ 'Lifegain and value': [C('Way of the Mentor','way-of-the-mentor.jpg','{2}{W}','Makes a Jace with 5 loyalty; your life gain adds loyalty to it'),
+                        C('Hexhaven Battalion','hexhaven-battalion.jpg','{4}{W}{W}','Three 2/2 Cadets and a Jace; discard for 2 to fetch a basic land')],
+}
+b_side = {
+ 'Sideboard': [C('Heroic Feast','heroic-feast.jpg','{2}{G}','Makes a Food; every time you gain life you put that many counters on your creatures. Good with Lyra.', set='msh'),
+               C('Esgaroth Garrison','esgaroth-garrison.jpg','{4}{W}','Big blocker that recruits more bodies. Swap in for a slower, bigger game.', set='hob'),
+               C('Turtle-Duck','turtle-duck.jpg','{G}','0/4 blocker that can become a 4/4 trampler for {3}', set='tla'),
+               C('Thorin\'s Last Stand','thorins-last-stand.jpg','{2}{W}{W}','Instant: +2/+1 to all your creatures, or destroy an artifact or enchantment', set='hob'),
+               C('Restore with Empathy','restore-with-empathy.jpg','{2}{G}','Return any permanent, gain 4 life'),
+               C('Predictive Preparations','predictive-preparations.jpg','{1}{W}','Counters on two creatures, with flashback (you own two)'),
+               C('Duskwatch Hunter','duskwatch-hunter.jpg','{2}{B/G}','3/1 that tokens cannot block; castable with green', set='hob')],
+}
+
+LANDS_B = [land_tile('vigorbloom-annex.jpg', 'Vigorbloom Annex', 'Green/white land; enters tapped unless you control a planeswalker'),
+           land_box('8 Forest', 'you own 9'), land_box('8 Plains', 'you own 9')]
+
+NOTE_B = ('This is the strongest 40 cards in the whole collection, and it is green-white because those are the only two colours with enough good cards and lands. '
+          'Compared with the first lifegain deck it swaps the weak cards (Living Library, Something Worth Saving, the tricks) for real removal: Helicarrier Strike, Go Nuts!, Sandbenders\' Storm and Settle the Wreckage, '
+          'and adds Jennifer Walters, Knight of Wundagore and Galion for a better curve. The Jace tokens and Lyra still reward every life you gain. '
+          'Settle the Wreckage is the big defensive card: hold four mana when they swing with everything. '
+          'Teamwork cards (Helicarrier Strike, Go Nuts!) let you tap creatures with enough total power to get the stronger mode, so keep cheap bodies on the table.')
+
 DECKS = [
  dict(id='green-white', title='Green-White Lifegain', file='green-white-lifegain.dck',
       intro='Cheap green bodies and white lifegain, with Lyra and Way of the Mentor turning every point of life into counters and cards.',
       data=(creatures, spells, side), lands=LANDS_GW, note=NOTE_GW),
+ dict(id='best', title='Best Deck (Green-White)', file='best-green-white.dck',
+      intro='The strongest 40 from the full collection: cheap green and white bodies, six removal spells, and Lyra and the Jace tokens for lifegain value.',
+      data=(b_creatures, b_spells, b_side), lands=LANDS_B, note=NOTE_B),
 ]
