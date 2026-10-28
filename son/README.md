@@ -2,9 +2,9 @@
 
 Photos of Son's FRA cards, one image per card, plus the original photos they were cut from.
 
-- `cards/` has one image per card (56 cards). Foil and non-foil copies would be marked in the file name.
-- `tokens-and-extras/` has the tokens (3).
-- `photos/` has the original photos: `photo-01.jpg` to `photo-15.jpg` (first set) and `retake-01.jpg` to `retake-15.jpg` (sharper second set). Most card images were cut from the retakes.
+- `cards/` has one image per card (84 cards). Foil and non-foil copies would be marked in the file name.
+- `tokens-and-extras/` has the tokens (7).
+- `photos/` has the original photos: `photo-01.jpg` to `photo-15.jpg` (first set) and `retake-01.jpg` to `retake-15.jpg` (sharper second set), and `batch2-01.jpg` to `batch2-17.jpg` (second batch, see below). Most first-batch card images were cut from the retakes.
 - `thumbs/` has the small versions used by the page (made by `tools/build_site.py`).
 - `decks/` has one `.dck` file per deck, and `decks.py` has the data for the deck page.
 
@@ -12,7 +12,7 @@ This mirrors `dad/`. See [`../AGENTS.md`](../AGENTS.md) for how decks are added.
 
 ## Cards from the first photos
 
-Two cards are still cut from the first set, because they are partly hidden or cut off in the retakes: Tetsuko Umezawa, Fugitive and Tetsuko Umezawa, Pursuer. The Cadet token was not in the retakes and is still cut off at the edge. Re-photograph those three if you want sharper images.
+The Cadet token is still cut from the first set (it was cut off at the edge in the retakes). Tetsuko Umezawa, Pursuer and Tetsuko Umezawa, Fugitive used to be cut from the first set too; they have been replaced with clean images from the second batch.
 
 ## Index
 
@@ -49,9 +49,9 @@ Two cards are still cut from the first set, because they are partly hidden or cu
 | Terminal Criticism | [cards/terminal-criticism.jpg](cards/terminal-criticism.jpg) | retake-01.jpg |
 | Flesh Duplicate | [cards/flesh-duplicate.jpg](cards/flesh-duplicate.jpg) | retake-05.jpg |
 | Jiang Yanggu, Alone | [cards/jiang-yanggu-alone.jpg](cards/jiang-yanggu-alone.jpg) | retake-04.jpg |
-| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | photo-08.jpg |
+| Tetsuko Umezawa, Pursuer | [cards/tetsuko-umezawa-pursuer.jpg](cards/tetsuko-umezawa-pursuer.jpg) | batch2-02.jpg |
 | Divining Duelist | [cards/divining-duelist.jpg](cards/divining-duelist.jpg) | retake-14.jpg |
-| Tetsuko Umezawa, Fugitive | [cards/tetsuko-umezawa-fugitive.jpg](cards/tetsuko-umezawa-fugitive.jpg) | photo-09.jpg |
+| Tetsuko Umezawa, Fugitive | [cards/tetsuko-umezawa-fugitive.jpg](cards/tetsuko-umezawa-fugitive.jpg) | batch2-14.jpg |
 | Lyra, Archangel of Dawn | [cards/lyra-archangel-of-dawn.jpg](cards/lyra-archangel-of-dawn.jpg) | retake-09.jpg |
 | Cadet token | [tokens-and-extras/cadet-token.jpg](tokens-and-extras/cadet-token.jpg) | photo-09.jpg |
 | Teyo, Diamondblade Mage | [cards/teyo-diamondblade-mage.jpg](cards/teyo-diamondblade-mage.jpg) | retake-07.jpg |
@@ -77,3 +77,44 @@ Two cards are still cut from the first set, because they are partly hidden or cu
 | Ferocity of the Hunt | [cards/ferocity-of-the-hunt.jpg](cards/ferocity-of-the-hunt.jpg) | retake-10.jpg |
 | Protégé's Awakening | [cards/proteges-awakening.jpg](cards/proteges-awakening.jpg) | retake-10.jpg |
 | Jiang Yanggu, Never Alone | [cards/jiang-yanggu-never-alone.jpg](cards/jiang-yanggu-never-alone.jpg) | retake-10.jpg |
+
+## Second batch (28 October 2026)
+
+Photos `batch2-01.jpg` to `batch2-17.jpg`. This batch has cards from several sets: FRA, plus Marvel (MSH, MAR), Avatar (TLA) and a few tokens. `batch2-06.jpg` and `batch2-07.jpg` show the same four cards (Kang, Thirst for Knowledge, Crimson Operative, Hulk); each image was cut from whichever was sharper.
+
+`batch2-11.jpg` to `batch2-17.jpg` are almost all cards already in the index above (only Wandering Musicians was new), so no second images were added for them. Also already in the index and seen again in `batch2-01`, `batch2-02` and `batch2-10`: Liliana the Faultless, Theorix Annex and one Jace token (two Jace tokens are in `batch2-02.jpg`). If any of these are really separate extra copies, say so and the copy counts can be recorded.
+
+| Item | Image | Original photo | Set / notes |
+|---|---|---|---|
+| Sundering Growth | [cards/sundering-growth.jpg](cards/sundering-growth.jpg) | batch2-01.jpg | MAR (Marvel), borderless |
+| The Lion-Turtle | [cards/the-lion-turtle.jpg](cards/the-lion-turtle.jpg) | batch2-01.jpg | TLA, showcase frame |
+| Knight of Wundagore | [cards/knight-of-wundagore.jpg](cards/knight-of-wundagore.jpg) | batch2-01.jpg | MSH |
+| Human Soldier token | [tokens-and-extras/human-soldier-token.jpg](tokens-and-extras/human-soldier-token.jpg) | batch2-02.jpg | HOB |
+| Helicarrier Strike | [cards/helicarrier-strike.jpg](cards/helicarrier-strike.jpg) | batch2-03.jpg | MSH |
+| Go Nuts! | [cards/go-nuts.jpg](cards/go-nuts.jpg) | batch2-03.jpg | MSH |
+| Frozen in Ice | [cards/frozen-in-ice.jpg](cards/frozen-in-ice.jpg) | batch2-03.jpg | MSH |
+| Ninja of the Hand | [cards/ninja-of-the-hand.jpg](cards/ninja-of-the-hand.jpg) | batch2-03.jpg | MSH |
+| Plains (TLA) | [cards/plains-tla.jpg](cards/plains-tla.jpg) | batch2-04.jpg | TLA |
+| Boiling Rock Rioter (foil) | [cards/boiling-rock-rioter-foil.jpg](cards/boiling-rock-rioter-foil.jpg) | batch2-04.jpg | TLA, foil |
+| The Vision | [cards/the-vision.jpg](cards/the-vision.jpg) | batch2-04.jpg | MSH |
+| Heroic Feast | [cards/heroic-feast.jpg](cards/heroic-feast.jpg) | batch2-04.jpg | MSH |
+| Heartwood token | [tokens-and-extras/heartwood-token.jpg](tokens-and-extras/heartwood-token.jpg) | batch2-05.jpg | FRA |
+| Clue token | [tokens-and-extras/clue-token.jpg](tokens-and-extras/clue-token.jpg) | batch2-05.jpg | TLA |
+| Jennifer Walters (foil) | [cards/jennifer-walters-foil.jpg](cards/jennifer-walters-foil.jpg) | batch2-05.jpg | MSH, foil, transforms |
+| Alien token | [tokens-and-extras/alien-token.jpg](tokens-and-extras/alien-token.jpg) | batch2-05.jpg | MSH |
+| Kang, Temporal Tyrant | [cards/kang-temporal-tyrant.jpg](cards/kang-temporal-tyrant.jpg) | batch2-06.jpg | MSH |
+| Thirst for Knowledge | [cards/thirst-for-knowledge.jpg](cards/thirst-for-knowledge.jpg) | batch2-06.jpg | MSH |
+| Crimson Operative | [cards/crimson-operative.jpg](cards/crimson-operative.jpg) | batch2-07.jpg | MSH |
+| Hulk, Gamma Goliath | [cards/hulk-gamma-goliath.jpg](cards/hulk-gamma-goliath.jpg) | batch2-06.jpg | MSH |
+| Unsummon | [cards/unsummon.jpg](cards/unsummon.jpg) | batch2-08.jpg | FRA |
+| Rank Rat (foil) | [cards/rank-rat-foil.jpg](cards/rank-rat-foil.jpg) | batch2-08.jpg | FRA, foil |
+| Rampart Hunter | [cards/rampart-hunter.jpg](cards/rampart-hunter.jpg) | batch2-08.jpg | FRA |
+| Tenured Tethermage | [cards/tenured-tethermage.jpg](cards/tenured-tethermage.jpg) | batch2-08.jpg | FRA |
+| Forecasting Fortune Teller | [cards/forecasting-fortune-teller.jpg](cards/forecasting-fortune-teller.jpg) | batch2-09.jpg | TLA |
+| Azula Always Lies | [cards/azula-always-lies.jpg](cards/azula-always-lies.jpg) | batch2-09.jpg | TLA |
+| Turtle-Duck | [cards/turtle-duck.jpg](cards/turtle-duck.jpg) | batch2-09.jpg | TLA |
+| Airbending Lesson | [cards/airbending-lesson.jpg](cards/airbending-lesson.jpg) | batch2-09.jpg | TLA |
+| Heartwood Crafter | [cards/heartwood-crafter.jpg](cards/heartwood-crafter.jpg) | batch2-10.jpg | FRA |
+| Island (MSH) | [cards/island-msh.jpg](cards/island-msh.jpg) | batch2-10.jpg | MSH |
+| Liliana the Repentant | [cards/liliana-the-repentant.jpg](cards/liliana-the-repentant.jpg) | batch2-10.jpg | FRA |
+| Wandering Musicians | [cards/wandering-musicians.jpg](cards/wandering-musicians.jpg) | batch2-11.jpg | TLA |
