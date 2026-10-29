@@ -32,6 +32,7 @@ The page has an "Official | Our photos" switch (Official is the default, the cho
 - A name that has several art variants (basic lands) can pass `cn='123'` (the collector number) to pick one, or `official=False` to always show our own photo. The photographed basics in `dad/decks.py` use `official=False` because their collector numbers aren't known yet.
 - `land_tile(...)` takes the same options, plus `card='Real Name'` if the label on the page differs from the card name.
 - Nothing in the build needs internet. It was tested against a mocked Scryfall only, so after changing the lookup code, open the live page and check that official images appear.
+- The "Card numbers" list at the bottom of every deck tab is filled in by the same Scryfall lookup: the collector numbers of the main deck and of the sideboard swap-ins, grouped by three-letter set code (FRA first), in number order, with "x2" for two copies. Basic lands are not numbered; their counts are shown as text. A card passed with `cn='123'` shows that number without the lookup. The numbers are those of the printing Scryfall returns for the card's name and set, so a showcase or other alternate printing needs `cn=` to be exact. The lookup cache key is `mtg-official-v3`; bump it if the cached fields change.
 
 ## Which person is it for?
 

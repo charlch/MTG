@@ -10,7 +10,7 @@ Each person has a folder (dad/, son/) with the same layout:
 
 Run from anywhere:  python3 tools/build_site.py   (needs Python with OpenCV, cv2)
 """
-import os, sys, re, html, runpy
+import os, sys, re, html, runpy, json
 import cv2
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -107,7 +107,26 @@ PANEL = '''<div class="panel" id="panel-@OID@-@ID@" role="tabpanel" aria-labelle
 @LANDS@
 <h2>Sideboard</h2><p class="sub">@SIDESUB@</p>@SIDE@
 <p class="note">@NOTE@</p>
+<div class="setup" data-setup="@SETUP@" data-basics="@BASICS@"><h2>Card numbers</h2><p class="sub">Just the collector numbers, by set, to pull this deck quickly.</p><div class="setup-out" aria-live="polite"></div></div>
 </div>'''
+
+BASIC_RE = re.compile(r'(forest|plains|island|swamp|mountain)\b', re.I)
+
+
+def setup_data(d):
+    """What the 'Card numbers' list at the bottom of a deck needs: [set, card name, collector number or None, 'm' main / 's' sideboard]
+    for every non-basic card (the page fills in numbers it does not know from Scryfall), plus the basic land counts as text."""
+    cr, sp, sd = d['data']
+    rows = []
+    for g in (cr, sp):
+        for cs in g.values():
+            rows += [[c['set'].lower(), c['name'], c['cn'], 'm'] for c in cs]
+    for it in d['lands']:
+        if it[0] == 'tile' and not BASIC_RE.match(it[4]['card']):
+            rows.append([it[4]['set'].lower(), it[4]['card'], it[4]['cn'], 'm'])
+    rows += [[c['set'].lower(), c['name'], c['cn'], 's'] for c in sd.get('Sideboard', [])]
+    basics = [it[1] for it in d['lands'] if it[0] == 'box' and re.match(r'\d+ (Forest|Plains|Island|Swamp|Mountain)$', it[1])]
+    return rows, ', '.join(basics)
 
 
 def render(o, d):
@@ -124,6 +143,9 @@ def render(o, d):
            '@NC@': str(sum(len(v) for v in cr.values())), '@NS@': str(sum(len(v) for v in sp.values())),
            '@CURVE@': ch, '@CREATURES@': group_html(o, cr), '@SPELLS@': group_html(o, sp), '@SIDE@': group_html(o, sd),
            '@SIDESUB@': SIDE_SUB, '@NOTE@': html.escape(d['note']), '@LANDS@': lands_html(o, d['lands'])}
+    rows, basics = setup_data(d)
+    rep['@SETUP@'] = html.escape(json.dumps(rows, separators=(',', ':')))
+    rep['@BASICS@'] = html.escape(basics)
     out = PANEL
     for k, v in rep.items(): out = out.replace(k, v)
     return out
@@ -268,12 +290,16 @@ window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
 show(location.hash.slice(1));
 /* Official card images: looked up on Scryfall in the browser (one batch request, cached for a week).
    Any problem (offline, blocked, card not found, image fails) falls back to our own photo. */
-const MODE_KEY='mtg-img-mode',CACHE_KEY='mtg-official-v2',TTL=7*864e5;
+const MODE_KEY='mtg-img-mode',CACHE_KEY='mtg-official-v3',TTL=7*864e5;
 const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
 let mode=store.get(MODE_KEY)==='mine'?'mine':'official',failed=false,cache={};
 try{cache=JSON.parse(store.get(CACHE_KEY)||'{}')||{};}catch(e){cache={};}
 const cardImgs=[...document.querySelectorAll('img[data-own]')],sfImgs=cardImgs.filter(i=>i.dataset.sfSet);
-const idOf=i=>i.dataset.sfCn?'c|'+i.dataset.sfSet+'|'+i.dataset.sfCn:'n|'+i.dataset.sfSet+'|'+i.dataset.sfName.toLowerCase();
+const sfId=(set,cn,name)=>cn?'c|'+set+'|'+cn:'n|'+set+'|'+name.toLowerCase();
+const idOf=i=>sfId(i.dataset.sfSet,i.dataset.sfCn,i.dataset.sfName);
+/* "Card numbers" list at the bottom of each deck: [set, name, collector number or null, 'm' main / 's' sideboard] per card */
+const setups=[...document.querySelectorAll('.setup')].map(el=>({el,rows:JSON.parse(el.dataset.setup),basics:el.dataset.basics,out:el.querySelector('.setup-out')}));
+let looked=false;
 const modeBtns=[...document.querySelectorAll('[data-mode]')],statusEl=document.getElementById('imgstatus');
 function apply(){
   let missing=0;
@@ -291,7 +317,8 @@ function apply(){
 cardImgs.forEach(i=>i.addEventListener('error',()=>{if(i.getAttribute('src')!==i.dataset.own){i.dataset.bad='1';apply();}}));
 async function lookup(){
   const need=new Map();
-  sfImgs.forEach(i=>{const id=idOf(i),c=cache[id];if(!c||Date.now()-c.t>TTL)need.set(id,i.dataset.sfCn?{set:i.dataset.sfSet,collector_number:i.dataset.sfCn}:{name:i.dataset.sfName,set:i.dataset.sfSet});});
+  const want=[...sfImgs.map(i=>[i.dataset.sfSet,i.dataset.sfCn,i.dataset.sfName]),...setups.flatMap(s=>s.rows.map(r=>[r[0],r[2],r[1]]))];
+  want.forEach(([set,cn,name])=>{const id=sfId(set,cn,name),c=cache[id];if(!c||Date.now()-c.t>TTL)need.set(id,cn?{set,collector_number:cn}:{name,set});});
   const list=[...need.entries()];
   failed=false;
   for(let s=0;s<list.length;s+=75){
@@ -304,7 +331,7 @@ async function lookup(){
         const u=c.image_uris||(c.card_faces&&c.card_faces[0]&&c.card_faces[0].image_uris);
         if(!u||!u.normal)continue;
         const f0=c.card_faces&&c.card_faces[0]||{},pr=c.prices||{};
-        const rec={n:u.normal,l:u.large||u.normal,t:Date.now(),m:{cmc:c.cmc,p:c.power!=null?c.power:f0.power,th:c.toughness!=null?c.toughness:f0.toughness,r:c.rarity,c:(c.colors||f0.colors||[]).join(''),ty:c.type_line||'',usd:parseFloat(pr.usd||pr.usd_foil||pr.usd_etched)||null}},nm=c.name.toLowerCase();
+        const rec={n:u.normal,l:u.large||u.normal,t:Date.now(),cn:c.collector_number,m:{cmc:c.cmc,p:c.power!=null?c.power:f0.power,th:c.toughness!=null?c.toughness:f0.toughness,r:c.rarity,c:(c.colors||f0.colors||[]).join(''),ty:c.type_line||'',usd:parseFloat(pr.usd||pr.usd_foil||pr.usd_etched)||null}},nm=c.name.toLowerCase();
         by.set('c|'+c.set+'|'+c.collector_number,rec);by.set('n|'+c.set+'|'+nm,rec);by.set('n|'+c.set+'|'+nm.split(' // ')[0],rec);
       }
       chunk.forEach(([id])=>{cache[id]=by.get(id)||{n:null,t:Date.now()};});
@@ -312,10 +339,34 @@ async function lookup(){
     if(s+75<list.length)await new Promise(r=>setTimeout(r,120));
   }
   if(list.length&&!failed)store.set(CACHE_KEY,JSON.stringify(cache));
-  apply();sortAll();
+  looked=true;
+  apply();sortAll();renderSetups();
+}
+/* Card numbers: grouped by three-letter set code, numbers in order, "x2" when a deck has two copies of the same card. */
+const cnKey=n=>{const v=parseInt(n,10);return [isNaN(v)?1e9:v,String(n)];};
+function setupText(rows,want){
+  const bySet=new Map(),unknown=[];
+  rows.filter(r=>r[3]===want).forEach(r=>{
+    const c=cache[sfId(r[0],r[2],r[1])],cn=r[2]||(c&&c.cn);
+    if(!cn){unknown.push(r[1]);return;}
+    const m=bySet.get(r[0])||new Map();m.set(cn,(m.get(cn)||0)+1);bySet.set(r[0],m);
+  });
+  const sets=[...bySet.keys()].sort((a,b)=>(a==='fra'?'':a).localeCompare(b==='fra'?'':b)); /* FRA first, as it is most of the cards */
+  return {sets:sets.map(s=>({set:s.toUpperCase(),nums:[...bySet.get(s).entries()].sort((a,b)=>{const x=cnKey(a[0]),y=cnKey(b[0]);return x[0]-y[0]||x[1].localeCompare(y[1]);}).map(([n,k])=>k>1?n+' ×'+k:n).join(', ')})),unknown};
+}
+function renderSetups(){
+  setups.forEach(s=>{
+    const main=setupText(s.rows,'m'),side=setupText(s.rows,'s'),miss=main.unknown.length+side.unknown.length;
+    const line=t=>t.sets.map(x=>'<div class="setrow"><b>'+x.set+'</b><span>'+x.nums+'</span></div>').join('');
+    let h='<h3>Main deck</h3>'+line(main)+(s.basics?'<p class="sub">Plus the basic lands: '+s.basics.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</p>':'');
+    if(side.sets.length)h+='<h3>Sideboard</h3>'+line(side);
+    if(miss)h+='<p class="sub">'+(looked?(failed?'Could not reach Scryfall, so '+miss+' card number'+(miss>1?'s are':' is')+' missing.':miss+' card'+(miss>1?'s were':' was')+' not found on Scryfall: '+main.unknown.concat(side.unknown).map(n=>n.replace(/&/g,'&amp;').replace(/</g,'&lt;')).join(', ')+'.'):'Looking up card numbers…')+'</p>';
+    s.out.innerHTML=h;
+  });
 }
 modeBtns.forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;store.set(MODE_KEY,mode);apply();if(mode==='official')lookup();}));
 apply();
+renderSetups();
 lookup();
 /* All cards tab: sorting. Name and set always work; the rest use the card data Scryfall returns (mana value, power, rarity, price...). */
 const RAR={common:1,uncommon:2,rare:3,mythic:4,special:5,bonus:5},COL='WUBRG',TYPES=['Land','Creature','Planeswalker','Artifact','Enchantment','Instant','Sorcery'];
